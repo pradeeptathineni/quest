@@ -4,7 +4,7 @@
 
 -   After having git, docker, terraform, and the AWS CLI installed, run the following commands to deploy the app:
 -   Clone this repo: `git clone https://github.com/pradeeptathineni/quest`
--   Execute the script:
+-   Deploy the app:
     -   `cd quest`
     -   `make deploy`
 
