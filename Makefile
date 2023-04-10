@@ -7,15 +7,12 @@ REGION := us-east-1
 ECR_REPO := ${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com
 
 build:
-	@echo "---> Building Docker image '$(IMAGE_NAME)' <---"
 	docker build -t $(IMAGE_NAME):latest .
 
 inspect:
-	@echo "---> Inspecting Docker image '$(IMAGE_NAME)' <---"
 	docker image inspect $(IMAGE_NAME)
 
 scan: 
-	@echo "---> Scanning Docker image '$(IMAGE_NAME)' <---"
 	docker scan --accept-license $(IMAGE_NAME) || exit 0
 
 run:
