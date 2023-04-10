@@ -10,7 +10,7 @@ FROM node:19.8-bullseye-slim
 WORKDIR /usr/src/app
 
 # Copy app package.json
-COPY package.json .
+COPY ../package.json .
 
 # Install dependencies
 RUN npm install
