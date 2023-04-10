@@ -354,15 +354,20 @@ resource "aws_ecs_service" "ecs_service" {
   launch_type     = "FARGATE"
   cluster         = aws_ecs_cluster.ecs_cluster.name
   network_configuration {
-    subnets          = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
-    security_groups  = [aws_security_group.service_security_group.id]
-    assign_public_ip = true
+    subnets         = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
+    security_groups = [aws_security_group.service_security_group.id]
+    # assign_public_ip = true
   }
   load_balancer {
     target_group_arn = aws_lb_target_group.lb_tgt_group_http.arn
     container_name   = "${var.service}-container"
     container_port   = 3000
   }
+  # load_balancer {
+  #   target_group_arn = aws_lb_target_group.lb_tgt_group_https.arn
+  #   container_name   = "${var.service}-container"
+  #   container_port   = 3000
+  # }
 }
 
 # Create IAM role for ECS task execution
@@ -415,7 +420,7 @@ resource "aws_lb_target_group" "lb_tgt_group_http" {
     protocol            = "HTTP"
     matcher             = "200-299"
     timeout             = "50"
-    path                = "/health-check"
+    path                = "/"
     unhealthy_threshold = "2"
   }
 }
@@ -466,8 +471,13 @@ resource "aws_lb_target_group" "lb_tgt_group_https" {
   vpc_id      = aws_vpc.vpc_quest.id
   target_type = "ip"
   health_check {
-    matcher = "200"
-    path    = "/"
+    healthy_threshold   = "3"
+    interval            = "60"
+    protocol            = "HTTPS"
+    matcher             = "200-299"
+    timeout             = "50"
+    path                = "/"
+    unhealthy_threshold = "2"
   }
 }
 
@@ -479,7 +489,7 @@ resource "aws_lb_listener" "listener_https" {
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
   certificate_arn   = aws_acm_certificate.tls_cert.arn
   default_action {
-    target_group_arn = aws_lb_target_group.lb_tgt_group_https.arn
+    target_group_arn = aws_lb_target_group.lb_tgt_group_http.arn
     type             = "forward"
   }
 }
