@@ -10,7 +10,7 @@ FROM node:19.8-bullseye-slim
 ENV SECRET_WORD "TwelveFactor"
 
 # Create and change work directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy app package.json
 COPY ../package.json .

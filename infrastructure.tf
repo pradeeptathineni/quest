@@ -258,6 +258,16 @@ resource "aws_ecr_lifecycle_policy" "ecr_repo_policy" {
 # Create ECS cluster
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "ecs-cluster-${var.service}"
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+# Create CloudWatch log group for container logs
+resource "aws_cloudwatch_log_group" "logs" {
+  name              = "logs-${var.service}"
+  retention_in_days = 7
 }
 
 # Create ECS task definition to define the container
@@ -266,7 +276,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.task_execution_role.arn
-  memory                   = 512
+  memory                   = 1024
   cpu                      = 256
   container_definitions = jsonencode([
     {
@@ -275,7 +285,16 @@ resource "aws_ecs_task_definition" "ecs_task" {
       portMappings = [{
         containerPort = 3000
         hostPort      = 3000
+        protocol      = "tcp"
       }]
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.logs.name
+          "awslogs-region"        = var.region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
     }
   ])
 }

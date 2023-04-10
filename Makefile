@@ -21,6 +21,11 @@ run:
 stop:
 	docker stop $(IMAGE_NAME)
 
+push: build
+	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+	docker tag ${IMAGE_NAME}:latest ${ECR_REPO}/${IMAGE_NAME}:latest
+	docker push ${ECR_REPO}/${IMAGE_NAME}:latest
+
 deploy: build
 	terraform init
 	terraform apply --target=aws_ecr_repository.ecr_repo --auto-approve
