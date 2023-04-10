@@ -90,7 +90,6 @@ resource "aws_route_table_association" "public_subnet_a_association" {
   subnet_id      = aws_subnet.public_subnet_a.id
   route_table_id = aws_route_table.public_subnet_route_table.id
 }
-
 resource "aws_route_table_association" "public_subnet_b_association" {
   subnet_id      = aws_subnet.public_subnet_b.id
   route_table_id = aws_route_table.public_subnet_route_table.id
@@ -211,6 +210,7 @@ resource "aws_route_table_association" "public_subnet_b_association" {
 #   value = aws_instance.instance_private.private_ip
 # }
 
+# Create ECR repository
 resource "aws_ecr_repository" "ecr_repo" {
   name                 = "${var.service}-app"
   force_delete         = true
@@ -220,6 +220,7 @@ resource "aws_ecr_repository" "ecr_repo" {
   }
 }
 
+# Create ECR lifecycle policy
 resource "aws_ecr_lifecycle_policy" "ecr_repo_policy" {
   repository = aws_ecr_repository.ecr_repo.name
   policy = jsonencode({
@@ -241,10 +242,12 @@ resource "aws_ecr_lifecycle_policy" "ecr_repo_policy" {
   })
 }
 
+# Create ECS cluster
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "ecs-cluster-${var.service}"
 }
 
+# Create ECS task definition to define the container
 resource "aws_ecs_task_definition" "ecs_task" {
   family                   = var.service
   network_mode             = "awsvpc"
@@ -264,6 +267,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
   ])
 }
 
+# Create the security group for the load balancer level
 resource "aws_security_group" "load_balancer_security_group" {
   description = "Security group for load balancer"
   vpc_id      = aws_vpc.vpc_quest.id
@@ -289,6 +293,7 @@ resource "aws_security_group" "load_balancer_security_group" {
   }
 }
 
+# Create the security group for the container level
 resource "aws_security_group" "service_security_group" {
   description = "Security group for containers"
   vpc_id      = aws_vpc.vpc_quest.id
@@ -307,6 +312,7 @@ resource "aws_security_group" "service_security_group" {
   }
 }
 
+# Create ECS service to bring up two duplicate containers
 resource "aws_ecs_service" "ecs_service" {
   name            = "${var.service}-service"
   task_definition = aws_ecs_task_definition.ecs_task.arn
@@ -325,6 +331,7 @@ resource "aws_ecs_service" "ecs_service" {
   }
 }
 
+# Create IAM role for ECS task execution
 resource "aws_iam_role" "task_execution_role" {
   name = "${var.service}-task-role"
   assume_role_policy = jsonencode({
@@ -344,11 +351,13 @@ resource "aws_iam_role" "task_execution_role" {
   }
 }
 
+# Create IAM role policy attachment to attach ECS task execution policy to role
 resource "aws_iam_role_policy_attachment" "my_app_task_role_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   role       = aws_iam_role.task_execution_role.name
 }
 
+# Create application loadbalancer
 resource "aws_lb" "app_lb" {
   name               = "lb-${var.service}"
   load_balancer_type = "application"
@@ -359,6 +368,7 @@ resource "aws_lb" "app_lb" {
   security_groups = [aws_security_group.load_balancer_security_group.id]
 }
 
+# Create HTTP loadbalancer target group
 resource "aws_lb_target_group" "lb_tgt_group_http" {
   name        = "target-group-http-${var.service}"
   port        = 80
@@ -371,6 +381,7 @@ resource "aws_lb_target_group" "lb_tgt_group_http" {
   }
 }
 
+# Create HTTP loadbalancer listener
 resource "aws_lb_listener" "listener_http" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 80
@@ -381,18 +392,20 @@ resource "aws_lb_listener" "listener_http" {
   }
 }
 
+# Create TLS private key
 resource "tls_private_key" "tls_pk" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
+# Create TLS self signed certificate
 resource "tls_self_signed_cert" "tls_ssc" {
   private_key_pem = tls_private_key.tls_pk.private_key_pem
   subject {
-    common_name  = "example.com"
+    common_name  = "${var.region}.elb.amazonaws.com"
     organization = "Rearc"
   }
-  validity_period_hours = 12
+  validity_period_hours = 720
   allowed_uses = [
     "key_encipherment",
     "digital_signature",
@@ -400,11 +413,13 @@ resource "tls_self_signed_cert" "tls_ssc" {
   ]
 }
 
+# Create ACM certificate
 resource "aws_acm_certificate" "tls_cert" {
   private_key      = tls_private_key.tls_pk.private_key_pem
   certificate_body = tls_self_signed_cert.tls_ssc.cert_pem
 }
 
+# Create HTTPS loadbalancer target group
 resource "aws_lb_target_group" "lb_tgt_group_https" {
   name        = "target-group-https-${var.service}"
   port        = 443
@@ -416,11 +431,13 @@ resource "aws_lb_target_group" "lb_tgt_group_https" {
     path    = "/"
   }
 }
+
+# Create HTTPS loadbalancer listener
 resource "aws_lb_listener" "listener_https" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
   certificate_arn   = aws_acm_certificate.tls_cert.arn
   default_action {
     target_group_arn = aws_lb_target_group.lb_tgt_group_https.arn
@@ -428,6 +445,7 @@ resource "aws_lb_listener" "listener_https" {
   }
 }
 
+# Output ALB DNS address
 output "alb_dns" {
   value = aws_lb.app_lb.dns_name
 }
