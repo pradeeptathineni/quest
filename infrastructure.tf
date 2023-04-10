@@ -226,13 +226,26 @@ resource "aws_ecr_lifecycle_policy" "ecr_repo_policy" {
   policy = jsonencode({
     rules = [
       {
-        description  = "Expire images older than 30 days"
         rulePriority = 1
+        description  = "Keep latest image"
+        selection = {
+          tagStatus     = "tagged"
+          tagPrefixList = ["latest"]
+          countType     = "imageCountMoreThan"
+          countNumber   = 1
+        }
+        action = {
+          type = "expire"
+        }
+      },
+      {
+        rulePriority = 2
+        description  = "Expire untagged images older than 7 days"
         selection = {
           tagStatus   = "untagged"
           countType   = "sinceImagePushed"
           countUnit   = "days"
-          countNumber = 30
+          countNumber = 7
         }
         action = {
           type = "expire"
@@ -286,10 +299,11 @@ resource "aws_security_group" "load_balancer_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 }
 
@@ -305,10 +319,11 @@ resource "aws_security_group" "service_security_group" {
     security_groups = [aws_security_group.load_balancer_security_group.id]
   }
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 }
 
@@ -376,8 +391,13 @@ resource "aws_lb_target_group" "lb_tgt_group_http" {
   vpc_id      = aws_vpc.vpc_quest.id
   target_type = "ip"
   health_check {
-    matcher = "200"
-    path    = "/"
+    healthy_threshold   = "3"
+    interval            = "60"
+    protocol            = "HTTP"
+    matcher             = "200-299"
+    timeout             = "50"
+    path                = "/health-check"
+    unhealthy_threshold = "2"
   }
 }
 
