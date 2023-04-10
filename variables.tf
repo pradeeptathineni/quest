@@ -21,9 +21,3 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
-
-# variable "public_key_file_name" {
-#   description = "Public key file path"
-#   type        = string
-#   default     = "~/.ssh/aws/kp-pt-quest.pem"
-# }
