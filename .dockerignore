@@ -1,0 +1,12 @@
+.git
+.gitignore
+
+node_modules
+
+Makefile
+
+package-lock.json
+
+README.md
+
+infrastructure

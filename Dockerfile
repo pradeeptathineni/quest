@@ -6,6 +6,9 @@ FROM node:19.8-bullseye-slim
 # Removing unneeded development dependencies reduces image bloat
 # RUN npm prune --omit=dev
 
+# Incorporate secret word
+ENV SECRET_WORD "TwelveFactor"
+
 # Create and change work directory
 WORKDIR /usr/src/app
 
