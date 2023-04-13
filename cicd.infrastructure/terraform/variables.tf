@@ -13,7 +13,7 @@ variable "profile" {
 variable "region" {
   description = "AWS region for deploying resources"
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "environment" {

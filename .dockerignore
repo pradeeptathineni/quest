@@ -9,4 +9,12 @@ package-lock.json
 
 README.md
 
-infrastructure
+# Exclude certificate files
+*.crt
+*.csr
+*.key
+
+
+# Exclude all Terraform files
+*.tf*
+*.terraform*

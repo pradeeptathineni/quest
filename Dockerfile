@@ -1,7 +1,7 @@
 # Version 19 of node allows for many use cases
 # https://www.docker.com/blog/how-to-use-the-node-docker-official-image/
 # 19.8-bullseye-slim has the lowest amount of vulnerabilities according to docker scan
-FROM node:19.8-bullseye-slim
+FROM node:16
 
 # Removing unneeded development dependencies reduces image bloat
 # RUN npm prune --omit=dev
