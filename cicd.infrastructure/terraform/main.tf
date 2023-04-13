@@ -81,11 +81,6 @@ resource "aws_codestarconnections_connection" "github_connection" {
   provider_type = "GitHub"
 }
 
-# owner_account_id      = local.account_id
-# provider_endpoint     = "https://api.github.com"
-# authentication_type   = "PersonalAccessToken"
-# personal_access_token = "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"
-
 # Create CodePipeline for the CICD workflow that will manage the Terraform state file
 resource "aws_codepipeline" "cicd_pipeline" {
   name = "cicd_pipeline"

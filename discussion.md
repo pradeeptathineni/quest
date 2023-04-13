@@ -16,6 +16,16 @@
 
 ## Things I would have done differently or with more time
 
+-   I did not use a methodology of Git commenting. Usually it's acceptable Git commenting practice to just describe what is being done. However, very often in Git projects that are company production services, we will see collaborators use a commit tagging convention of their own that allows them to better discern commits. This is a good practice for documentation and rollback purposes. A few examples of these that I could have used throughout my development are (https://www.freecodecamp.org/news/writing-good-commit-messages-a-practical-guide/):
+
+    -   feat: The new feature you're adding to a particular application
+    -   fix: A bug fix
+    -   style: Feature and updates related to styling
+    -   refactor: Refactoring a specific section of the codebase
+    -   test: Everything related to testing
+    -   docs: Everything related to documentation
+    -   chore: Regular code maintenance.
+
 ## Questions I was left with
 
 ### Q. Why do I not have to create a target group for HTTPS protocol?
