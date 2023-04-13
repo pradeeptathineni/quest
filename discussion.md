@@ -1,11 +1,24 @@
 # Quest Discussion
 
-### Architecture:
+## Service Infrastructure
 
 -   The quest's node.js app is deployed as a Docker image running on AWS ECS.
--   It is loadbalanced over two availability zones and serves the app over HTTP and HTTPS.
 
-### Twelve Factor:
+    -   It is loadbalanced over two availability zones and served over HTTP and HTTPS.
+    -   HTTP traffic is rerouted to HTTPS.
+
+-   CircleCI defines a CICD pipeline that will build a new Docker image, push it to ECR, force redeploy the ECS service, and apply new Terraform architecture changes.
+    -   Terraform configuration and state files are versioned in separate buckets to maintain architecture history changes.
+    -   This pipeline can be used for the preliminary and subsequent deployments.
+
+## CICD Infrastructure
+
+-   I created an AWS S3 bucket for the Terraform configuration files and another for the Terraform state files. This is a good practice for several reasons:
+    -   Separation of Concerns: Keeping the Terraform configuration files and state files separate can help reduce the risk of accidentally overwriting or deleting critical files. It also makes it easier to manage access control for each bucket separately.
+    -   Versioning: It's a good practice to enable versioning on S3 buckets that store critical files. However, having both configuration files and state files in the same bucket could lead to confusion when trying to identify the right version of a specific file.
+    -   Performance: Terraform state files can grow quite large, especially for larger infrastructures. Storing them in a separate S3 bucket can help prevent performance issues with the bucket used for configuration files.
+
+## Twelve Factor:
 
 -   The Twelve-Factor methodology is a set of principles for building modern, scalable, and maintainable software applications. The factors include: codebase, dependencies, configuration, backing services, build, release, run, processes, port binding, concurrency, disposability, dev/prod parity, logs, and admin processes. These factors are intended to promote best practices in software development. By following these principles, developers can build applications that are easier to maintain, scale, and deploy, and that are adaptable to changing requirements and environments. The 12 factors can be described as the following (https://dzone.com/articles/12-factor-app-principles-and-cloud-native-microser):
 
@@ -30,6 +43,7 @@
     -   Testability: Applications should be designed to be easily testable, with automated testing built into the development process. This helps to ensure that the application is reliable and performs as expected.
 
 -   The application architecture of this quest app tries to accomplish the Twelve Factor practice in the following ways:
+
     1. Codebase: The application and its IaaC is saved in the version control system Github.
     2. Dependency management: The application has dependencies defined in its NPM package.json, which are installed during the building of the Docker image.
     3. Config: The configuration values for the application and its architecture are stored in variables that can be easily changed depending on the environment, increasing reusability and security.
@@ -43,35 +57,23 @@
     11. Logs: The architecture uses a CloudWatch log group to monitor the containers.
     12. Admin processes: The architecture is managed using the Terraform configuration files and Terraform command line.
 
-## Service Infrastructure
-
-## CICD Infrastructure
-
--   I created one for the Terraform configuration files and another for the Terraform state files. This is a good practice for several reasons:
-
-    -   Separation of Concerns: Keeping the Terraform configuration files and state files separate can help reduce the risk of accidentally overwriting or deleting critical files. It also makes it easier to manage access control for each bucket separately.
-
-    -   Versioning: It's a good practice to enable versioning on S3 buckets that store critical files. However, having both configuration files and state files in the same bucket could lead to confusion when trying to identify the right version of a specific file.
-
-    -   Performance: Terraform state files can grow quite large, especially for larger infrastructures. Storing them in a separate S3 bucket can help prevent performance issues with the bucket used for configuration files.
-
 ## Things I would have done differently or with more time
 
--   I did not use a methodology of Git commenting. Usually it's acceptable Git commenting practice to just describe what is being done. However, very often in Git projects that are company production services, we will see collaborators use a commit tagging convention of their own that allows them to better discern commits. This is a good practice for documentation and rollback purposes. A few examples of these that I could have used throughout my development are (https://www.freecodecamp.org/news/writing-good-commit-messages-a-practical-guide/):
+1. I did not use a methodology of Git commenting. Usually it's acceptable Git commenting practice to just describe what is being done. However, very often in Git projects that are company production services, we will see collaborators use a commit tagging convention of their own that allows them to better discern commits. This is a good practice for documentation and rollback purposes. A few examples of these that I could have used throughout my development are (https://www.freecodecamp.org/news/writing-good-commit-messages-a-practical-guide/):
 
-    -   feat: The new feature you're adding to a particular application
-    -   fix: A bug fix
-    -   style: Feature and updates related to styling
-    -   refactor: Refactoring a specific section of the codebase
-    -   test: Everything related to testing
-    -   docs: Everything related to documentation
-    -   chore: Regular code maintenance.
+    - feat: The new feature you're adding to a particular application
+    - fix: A bug fix
+    - style: Feature and updates related to styling
+    - refactor: Refactoring a specific section of the codebase
+    - test: Everything related to testing
+    - docs: Everything related to documentation
+    - chore: Regular code maintenance.
 
--
+2. I felt that there should be CICD pipelines for two different types of deployments: 1) service deployments (changes to application or Dockerfile code), and 2) infrastructure deployments (changes to Terraform infrastructure). Ideally for this scenario, there would be some kind of logic to see that changes occurred in certain files, and according to that will a service deployment, infrastructure deployment, or both occur. To simplify this, I decided that the CICD will do the entire deployment every time we have changes committed and we've decided to redeploy our application (i.e. it's maintenance time at the company). This means Docker will build and tag a new image, push it to ECR, force a redeployment in ECS, and finally also apply any terraform architecture changes. The downside here is you may be waiting for things to happen that you shouldn't have to wait for, such as rebuilding and retagging an image that hasn't been changed. An upside to this is that the Docker image will be scanned for vulnerabilities every time there is a deploy, so on every deploy we can ensure we have the latest information on our application image's security posture. We can also have our pipeline service, such as AWS CodePipeline, CircleCI, or Jenkins, tag the image with the latest commit being deployed, so every deploy is related to an image uniquely identifiable by the commit.
 
 ## Questions I was left with
 
-### Q. Why do I not have to create a target group for HTTPS protocol?
+### Q. Why do I not have to create an AWS target group for HTTPS protocol?
 
 -   When I first deployed my architecture, I was creating one target group for both HTTP and HTTPS protocols, but it turned out assigning that HTTPS target group to the HTTPS listener would not work.
 -   Turns out it was the listener that was of importance when configuring HTTPS for a target group.

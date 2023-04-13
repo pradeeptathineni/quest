@@ -22,7 +22,8 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "CIRCLECI_TOKEN" {
-  description = "[ENV] Circle CI personal API token"
+variable "image_tag" {
+  description = "Tag of ECR image to deploy"
   type        = string
+  default     = "latest"
 }

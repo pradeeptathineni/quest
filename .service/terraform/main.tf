@@ -171,7 +171,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
   container_definitions = jsonencode([
     {
       name  = "${var.service}-container"
-      image = "${aws_ecr_repository.ecr_repo.repository_url}:latest"
+      image = "${aws_ecr_repository.ecr_repo.repository_url}:${var.image_tag}"
       portMappings = [{
         containerPort = 3000
         hostPort      = 3000
@@ -370,10 +370,6 @@ output "alb_dns" {
   value = aws_lb.app_lb.dns_name
 }
 
-provider "circleci" {
-  api_token = var.CIRCLECI_TOKEN
-}
-
 resource "aws_iam_role" "circleci_ecr_upload_role" {
   name = "circleci_ecr_upload_role"
 
@@ -470,57 +466,4 @@ resource "aws_iam_role" "circleci_ecr_upload_role" {
   tags = {
     Name = "CircleCI ECR Upload Role"
   }
-}
-
-resource "aws_iam_policy" "circleci_ecr_upload_policy" {
-  name_prefix = "circleci_ecr_upload_policy_"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "ecr:GetAuthorizationToken"
-        ]
-        Effect   = "Allow"
-        Resource = "*"
-      },
-      {
-        Action = [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:BatchGetImage",
-          "ecr:CompleteLayerUpload",
-          "ecr:InitiateLayerUpload",
-          "ecr:PutImage",
-          "ecr:UploadLayerPart"
-        ]
-        Effect   = "Allow"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "circleci_ecr_upload_policy_attachment" {
-  policy_arn = aws_iam_policy.circleci_ecr_upload_policy.arn
-  role       = aws_iam_role.circleci_ecr_upload_role.name
-}
-
-
-data "template_file" "circleci_config" {
-  template = file("../../.circleci/config.yml")
-  vars = {
-    aws_region         = var.region
-    aws_account_id     = local.account_id
-    aws_ecr_repository = aws_ecr_repository.ecr_repo.name
-    aws_iam_role       = aws_iam_role.circleci_ecr_upload_role.name
-  }
-}
-
-resource "circleci_project" "example" {
-  name      = "example"
-  vcs_type  = "github"
-  username  = "pradeeptathineni"
-  repo_name = "quest"
-  config    = data.template_file.circleci_config.rendered
 }
