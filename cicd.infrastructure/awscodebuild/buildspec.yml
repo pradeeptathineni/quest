@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      terraform: 1.0.3
+    commands:
+    - mkdir out
+    - terraform --version
+  build:
+    commands:
+    - terraform init -backend-config="bucket=${aws_s3_bucket.terraform_state_bucket.bucket}" -backend-config="key=terraform.tfstate" -backend-config="region=${var.region}" -backend-config="encrypt=true"
+    - terraform validate
+    - terraform fmt -check=true
+    - terraform plan
+    - terraform output > out/outputs.txt
+  post_build:
+    commands:
+    - cd out
+    - zip -r terraform-config.zip .
+    - aws s3 cp terraform-config.zip s3://${aws_s3_bucket.terraform_config_bucket.bucket}/terraform/terraform-config.zip
