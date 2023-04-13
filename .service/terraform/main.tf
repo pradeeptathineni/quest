@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 4.0"
     }
+    circleci = {
+      source  = "mrolla/circleci"
+      version = "0.6.1"
+    }
   }
 }
 
@@ -19,6 +23,12 @@ provider "aws" {
       "managed_by"  = "terraform"
     }
   }
+}
+
+data "aws_caller_identity" "current" {}
+
+locals {
+  account_id = data.aws_caller_identity.current.account_id
 }
 
 # Create VPC
@@ -358,4 +368,159 @@ resource "aws_lb_listener" "listener_https" {
 # Output ALB DNS address
 output "alb_dns" {
   value = aws_lb.app_lb.dns_name
+}
+
+provider "circleci" {
+  api_token = var.CIRCLECI_TOKEN
+}
+
+resource "aws_iam_role" "circleci_ecr_upload_role" {
+  name = "circleci_ecr_upload_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "codebuild.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "codedeploy.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "events.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "batch.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecr.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "elasticbeanstalk.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "sagemaker.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "servicecatalog.amazonaws.com"
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "sns.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "CircleCI ECR Upload Role"
+  }
+}
+
+resource "aws_iam_policy" "circleci_ecr_upload_policy" {
+  name_prefix = "circleci_ecr_upload_policy_"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+      {
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:CompleteLayerUpload",
+          "ecr:InitiateLayerUpload",
+          "ecr:PutImage",
+          "ecr:UploadLayerPart"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "circleci_ecr_upload_policy_attachment" {
+  policy_arn = aws_iam_policy.circleci_ecr_upload_policy.arn
+  role       = aws_iam_role.circleci_ecr_upload_role.name
+}
+
+
+data "template_file" "circleci_config" {
+  template = file("../../.circleci/config.yml")
+  vars = {
+    aws_region         = var.region
+    aws_account_id     = local.account_id
+    aws_ecr_repository = aws_ecr_repository.ecr_repo.name
+    aws_iam_role       = aws_iam_role.circleci_ecr_upload_role.name
+  }
+}
+
+resource "circleci_project" "example" {
+  name      = "example"
+  vcs_type  = "github"
+  username  = "pradeeptathineni"
+  repo_name = "quest"
+  config    = data.template_file.circleci_config.rendered
 }

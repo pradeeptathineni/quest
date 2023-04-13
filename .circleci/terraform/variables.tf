@@ -21,8 +21,3 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
-
-variable "CIRCLECI_TOKEN" {
-  description = "[ENV] Circle CI personal API token"
-  type        = string
-}
