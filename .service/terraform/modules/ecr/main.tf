@@ -8,8 +8,35 @@ resource "aws_ecr_repository" "ecr_repo" {
   }
 }
 
+resource "aws_iam_policy" "ecr_repo_iam_policy" {
+  name = "ecr-repo-iam-policy"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "ecr:BatchGetImage",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:CompleteLayerUpload",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:InitiateLayerUpload",
+          "ecr:PutImage",
+          "ecr:UploadLayerPart"
+        ],
+        "Effect" : "Allow",
+        "Principal" : "*"
+      }
+    ]
+  })
+}
+
+resource "aws_ecr_repository_policy" "ecr_repo_policy" {
+  repository = aws_ecr_repository.ecr_repo.name
+  policy     = aws_iam_policy.ecr_repo_iam_policy.arn
+}
+
 # Create ECR lifecycle policy
-resource "aws_ecr_lifecycle_policy" "ecr_repo_policy" {
+resource "aws_ecr_lifecycle_policy" "ecr_repo_life_policy" {
   repository = aws_ecr_repository.ecr_repo.name
   policy = jsonencode({
     rules = [

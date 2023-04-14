@@ -1,7 +1,7 @@
 resource "circleci_environment_variable" "image_name" {
   project = var.service
   name    = "IMAGE_NAME"
-  value   = var.service
+  value   = "quest-app"
 }
 
 resource "circleci_environment_variable" "aws_region" {
