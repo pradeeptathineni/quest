@@ -13,7 +13,7 @@ ENV SECRET_WORD "TwelveFactor"
 WORKDIR /app
 
 # Copy app package.json
-COPY ../package.json .
+COPY package.json .
 
 # Install dependencies
 RUN npm install
