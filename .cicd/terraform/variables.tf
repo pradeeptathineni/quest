@@ -4,12 +4,6 @@ variable "service" {
   default     = "quest"
 }
 
-variable "profile" {
-  description = "The local AWS user profile with access to the service account"
-  type        = string
-  default     = "default"
-}
-
 variable "region" {
   description = "AWS region for deploying resources"
   type        = string
@@ -22,7 +16,12 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "github_circleci_pat" {
+variable "github_org" {
+  type    = string
+  default = "pradeeptathineni"
+}
+
+variable "circleci_token" {
   type = string
 }
 
