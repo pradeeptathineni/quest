@@ -6,7 +6,6 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: Install dependencies
           command: |
@@ -16,13 +15,14 @@ jobs:
             sudo apt-get -y install awscli
             # Ensure AWS CLI is working
             aws --version
+      - setup_remote_docker
       - run:
           name: Build, tag, and push Docker image to ECR
           command: |
             docker build -t $SERVICE .
             docker tag $SERVICE:$CIRCLE_SHA1 $AWS_ECR_REPO:$CIRCLE_SHA1
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO
-            docker push $AWS_ECR_REPO:$CIRCLE_SHA1
+            docker push $AWS_ECR_REPO/$IMAGE_NAME:$CIRCLE_SHA1
   terraform-apply:
     docker:
       - image: hashicorp/terraform:1.0.9
