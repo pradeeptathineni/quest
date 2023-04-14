@@ -6,14 +6,68 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - checkout
-
-
+      - run:
+          name: Install dependencies
+          command: |
+            # Update the apt package index
+            sudo apt-get update
+            # Install packages to allow apt to use a repository over HTTPS
+            sudo apt-get install ca-certificates curl gnupg
+            # Add Docker’s official GPG key
+            sudo install -m 0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            sudo chmod a+r /etc/apt/keyrings/docker.gpg
+            # Install Docker Engine, containerd, and Docker Compose
+            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            # Ensure Docker is running and working
+            sudo systemctl enable docker
+            docker --version
+            # Install AWS CLI
+            sudo apt-get -y install awscli
+            # Ensure AWS CLI is working
+            aws --version
+      - run:
+          name: Build, tag, and push Docker image to ECR
+          command: |
+            docker build -t my-docker-image .
+            docker tag my-docker-image:$CIRCLE_SHA1 $AWS_ECR_REPO:$CIRCLE_SHA1
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO
+            docker push $AWS_ECR_REPO:$CIRCLE_SHA1
+  terraform-apply:
+    docker:
+      - image: hashicorp/terraform:1.0.9
+    working_directory: ~/repo/terraform
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+            sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+            sudo apt-get update && sudo apt-get install terraform
+            terraform --version
+            echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $BASH_ENV
+            echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Apply Terraform architecture changes
+          command: |
+            terraform init
+            terraform validate
+            terraform plan
+            terraform apply -auto-approve
 
 workflows:
   version: 2
   build-and-push:
     jobs:
       - build-and-push:
+          filters:
+            branches:
+              only: master
+  terraform-apply:
+    jobs:
+      - terraform-apply:
           filters:
             branches:
               only: master
