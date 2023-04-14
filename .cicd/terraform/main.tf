@@ -1,6 +1,6 @@
-resource "circleci_environment_variable" "service" {
+resource "circleci_environment_variable" "image_name" {
   project = var.service
-  name    = "SERVICE"
+  name    = "IMAGE_NAME"
   value   = var.service
 }
 
