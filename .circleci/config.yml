@@ -67,6 +67,7 @@ workflows:
             branches:
               only: master
       - terraform-apply:
+          requires: [build-and-push]
           filters:
             branches:
               only: master
