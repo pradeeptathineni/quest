@@ -23,7 +23,6 @@ jobs:
             docker tag $IMAGE_NAME:$CIRCLE_SHA1 $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
-            
   terraform-apply:
     docker:
       - image: hashicorp/terraform:1.0.9
@@ -43,7 +42,8 @@ jobs:
       - run:
           name: Apply Terraform architecture changes
           command: |
-            cd .service/terraformterraform init
+            cd .service/terraform
+            terraform init
             terraform validate
             terraform plan
             terraform apply -auto-approve

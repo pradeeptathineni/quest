@@ -6,7 +6,7 @@ resource "circleci_environment_variable" "image_name" {
   value   = "quest-app"
 }
 
-resource "circleci_environment_variable" "aws_region" {
+resource "circleci_environment_variable" "aws_account_id" {
   project = var.service
   name    = "AWS_ACCOUNT_ID"
   value   = data.aws_caller_identity.current.account_id
