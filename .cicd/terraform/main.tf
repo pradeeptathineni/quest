@@ -1,3 +1,9 @@
+resource "circleci_environment_variable" "service" {
+  project = var.service
+  name    = "SERVICE"
+  value   = var.service
+}
+
 resource "circleci_environment_variable" "aws_region" {
   project = var.service
   name    = "AWS_REGION"

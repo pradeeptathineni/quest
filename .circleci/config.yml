@@ -19,8 +19,8 @@ jobs:
       - run:
           name: Build, tag, and push Docker image to ECR
           command: |
-            docker build -t my-docker-image .
-            docker tag my-docker-image:$CIRCLE_SHA1 $AWS_ECR_REPO:$CIRCLE_SHA1
+            docker build -t $SERVICE .
+            docker tag $SERVICE:$CIRCLE_SHA1 $AWS_ECR_REPO:$CIRCLE_SHA1
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO
             docker push $AWS_ECR_REPO:$CIRCLE_SHA1
   terraform-apply:
