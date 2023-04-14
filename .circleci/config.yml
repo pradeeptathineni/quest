@@ -3,25 +3,15 @@ version: 2.1
 jobs:
   build-and-push:
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/base:stable
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Install dependencies
           command: |
             # Update the apt package index
             sudo apt-get update
-            # Install packages to allow apt to use a repository over HTTPS
-            sudo apt-get install ca-certificates curl gnupg
-            # Add Docker’s official GPG key
-            sudo install -m 0755 -d /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            sudo chmod a+r /etc/apt/keyrings/docker.gpg
-            # Install Docker Engine, containerd, and Docker Compose
-            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-            # Ensure Docker is running and working
-            sudo service docker start
-            docker --version
             # Install AWS CLI
             sudo apt-get -y install awscli
             # Ensure AWS CLI is working
