@@ -21,6 +21,7 @@ jobs:
             sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
             # Ensure Docker is running and working
             sudo systemctl enable docker
+            sudo systemctl start docker
             docker --version
             # Install AWS CLI
             sudo apt-get -y install awscli
@@ -59,14 +60,12 @@ jobs:
 
 workflows:
   version: 2
-  build-and-push:
+  deploy:
     jobs:
       - build-and-push:
           filters:
             branches:
               only: master
-  terraform-apply:
-    jobs:
       - terraform-apply:
           filters:
             branches:
