@@ -26,13 +26,29 @@ push: build
 	docker tag ${IMAGE_NAME}:latest ${ECR_REPO}/${IMAGE_NAME}:latest
 	docker push ${ECR_REPO}/${IMAGE_NAME}:latest
 
-deploy: build
-	terraform init
-	terraform apply --target=aws_ecr_repository.ecr_repo --auto-approve
+push-no-build: build
 	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
 	docker tag ${IMAGE_NAME}:latest ${ECR_REPO}/${IMAGE_NAME}:latest
 	docker push ${ECR_REPO}/${IMAGE_NAME}:latest
-	terraform apply --auto-approve
+
+deploy: build
+	cd .service/terraform && terraform init
+	cd .service/terraform && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
+	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+	docker tag ${IMAGE_NAME}:latest ${ECR_REPO}/${IMAGE_NAME}:latest
+	docker push ${ECR_REPO}/${IMAGE_NAME}:latest
+	cd .service/terraform && terraform apply --auto-approve
+
+deploy-no-build:
+	cd .service/terraform && terraform init
+	cd .service/terraform && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
+	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+	docker tag ${IMAGE_NAME}:latest ${ECR_REPO}/${IMAGE_NAME}:latest
+	docker push ${ECR_REPO}/${IMAGE_NAME}:latest
+	cd .service/terraform && terraform apply --auto-approve
 
 redeploy:
-	terraform apply --auto-approve
+	cd .service/terraform && terraform apply --auto-approve
+
+destroy:
+	cd .service/terraform && terraform destroy --auto-approve
