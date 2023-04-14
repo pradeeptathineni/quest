@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@7.0.0
-  
+
 jobs:
   build-and-push:
     docker:
@@ -25,10 +25,10 @@ jobs:
             docker build -t $IMAGE_NAME:$CIRCLE_SHA1 .
             docker tag $IMAGE_NAME:$CIRCLE_SHA1 $AWS_ECR_REPO/$IMAGE_NAME:$CIRCLE_SHA1
       - aws-ecr/build-and-push-image:
-            account-url: $AWS_ECR_REPO
-            aws-access-key-id: $AWS_ACCESS_KEY_ID
-            aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
-            region: $AWS_REGION
+            account-url: AWS_ECR_REPO
+            aws-access-key-id: AWS_ACCESS_KEY_ID
+            aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+            region: AWS_REGION
             dockerfile: Dockerfile
             path: ./
             repo: quest-app
