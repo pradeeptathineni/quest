@@ -42,6 +42,7 @@ jobs:
       - run:
           name: Apply Terraform architecture changes
           command: |
+            cd .service/terraform
             terraform init
             terraform validate
             terraform plan
