@@ -42,7 +42,6 @@ module "ecs" {
   public_subnet_a_id = module.network.public_subnet_a_id
   public_subnet_b_id = module.network.public_subnet_b_id
   ecr_repo           = module.ecr.ecr_repository_url
-  alb_arn            = module.alb.alb_arn
+  alb_tg_arn         = module.alb.alb_tg_arn
   alb_sg_id          = module.alb.alb_sg_id
 }
-

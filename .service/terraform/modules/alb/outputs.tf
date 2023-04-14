@@ -1,6 +1,6 @@
 # Output ALB ARN
-output "alb_arn" {
-  value = aws_lb.app_lb.arn
+output "alb_tg_arn" {
+  value = aws_lb_target_group.lb_tgt_group_http.arn
 }
 
 # Output ALB security group ID

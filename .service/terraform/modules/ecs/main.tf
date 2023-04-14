@@ -75,7 +75,7 @@ resource "aws_ecs_service" "ecs_service" {
     assign_public_ip = true
   }
   load_balancer {
-    target_group_arn = var.alb_arn
+    target_group_arn = var.alb_tg_arn
     container_name   = "${var.service}-container"
     container_port   = 3000
   }
@@ -90,7 +90,7 @@ resource "aws_iam_role" "task_execution_role" {
       {
         Effect = "Allow"
         Principal = {
-          Service = "ecs.amazonaws.com"
+          Service = "ecs-tasks.amazonaws.com"
         }
         Action = "sts:AssumeRole"
       }
