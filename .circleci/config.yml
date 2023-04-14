@@ -18,7 +18,6 @@ jobs:
             sudo apt-get -y install awscli
             # Ensure AWS CLI is working
             aws --version
-            echo $AWS_ECR_REPO
       - setup_remote_docker
       - run:
           name: Build and tag Docker image
@@ -26,7 +25,7 @@ jobs:
             docker build -t $IMAGE_NAME:$CIRCLE_SHA1 .
             docker tag $IMAGE_NAME:$CIRCLE_SHA1 $AWS_ECR_REPO/$IMAGE_NAME:$CIRCLE_SHA1
       - aws-ecr/build-and-push-image:
-            account-url: AWS_ECR_REPO
+            account-url: 310981538866.dkr.ecr.us-east-1.amazonaws.com
             aws-access-key-id: AWS_ACCESS_KEY_ID
             aws-secret-access-key: AWS_SECRET_ACCESS_KEY
             region: AWS_REGION
