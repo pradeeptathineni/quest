@@ -9,8 +9,6 @@ jobs:
       - run:
           name: Install Terraform CLI
           command: |
-            echo $(cd ~ && ls -ltrha)
-            pwd && ls -ltrha
             sudo apt-get update
             sudo apt-get install -y gnupg software-properties-common
             wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -36,22 +34,22 @@ jobs:
           name: Deploy state architecture (terraform.tfstate buckets)
           command: |
             pwd && ls -ltrha
-            cd .state/terraform
+            cd ~/circleci/project/.state/terraform
             terraform init
             terraform apply --auto-approve
       - run:
           name: Apply cicd architecture (circleci environment variables)
           command: |
             pwd && ls -ltrha
-            cd .cicd/terraform
-            terraform init -backend-config="bucket=$(cd .state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
+            cd ~/circleci/project/.cicd/terraform
+            terraform init -backend-config="bucket=$(cd ~/circleci/project/.state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
             terraform apply --auto-approve
       - run:
           name: Deploy ECR if not exist and log into ECR
           command: |
             pwd && ls -ltrha
-            cd .service/terraform
-            terraform init -backend-config="bucket=$(cd .state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
+            cd ~/circleci/project/.service/terraform
+            terraform init -backend-config="bucket=$(cd ~/circleci/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
             terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
       - setup_remote_docker
@@ -61,20 +59,20 @@ jobs:
             pwd && ls -ltrha
             docker build -t $IMAGE_NAME:latest .
             docker tag $IMAGE_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
-            aws ecr describe-repositories --repository-names $AWS_ECR_REPO_NAME || $(cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve)
+            aws ecr describe-repositories --repository-names $AWS_ECR_REPO_NAME || $(cd ~/circleci/project/.service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve)
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
       - run:
           name: Apply Terraform service architecture
           command: |
-            cd ../../.service/terraform
-            terraform init -backend-config="bucket=$(cd .state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
+            cd ~/circleci/project/.service/terraform
+            terraform init -backend-config="bucket=$(cd ~/circleci/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
             terraform apply -auto-approve
       - run: 
           name: Force redeploy service
           command: |
             pwd && ls -ltrha
-            aws ecs update-service --cluster $(cd .service/terraform && terraform output -raw ecs_cluster_name) --service $(cd .service/terraform && terraform output -raw ecs_service_name) --force-new-deployment
+            aws ecs update-service --cluster $(cd ~/circleci/project/.service/terraform && terraform output -raw ecs_cluster_name) --service $(cd .service/terraform && terraform output -raw ecs_service_name) --force-new-deployment
 
 workflows:
   version: 2
