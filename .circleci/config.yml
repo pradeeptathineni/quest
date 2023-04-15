@@ -12,17 +12,17 @@ jobs:
             [ -n "$AWS_SECRET_ACCESS_KEY" ] || (echo "ERROR: AWS_SECRET_ACCESS_KEY was not set in your CircleCI profile environment variables!" && exit 1)
             [ -n "$AWS_REGION" ] || (echo "ERROR: AWS_REGION was not set in your CircleCI profile environment variables!" && exit 1)
       - checkout
-      - run:
-          name: Install Terraform CLI
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y gnupg software-properties-common
-            wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
-            gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
-            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-            sudo apt update
-            sudo apt-get -y install terraform
-            terraform --version
+      # - run:
+      #     name: Install Terraform CLI
+      #     command: |
+      #       sudo apt-get update
+      #       sudo apt-get install -y gnupg software-properties-common
+      #       wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+      #       gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
+      #       echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+      #       sudo apt update
+      #       sudo apt-get -y install terraform
+      #       terraform --version
       - run:
           name: Install AWS CLI and configure
           command: |
@@ -33,33 +33,27 @@ jobs:
             # Configure AWS CLI
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
-      - run:
-          name: Deploy state architecture (terraform.tfstate buckets)
-          command: |
-            cd ~/project/.state/terraform
-            terraform init
-            terraform apply --auto-approve
       # - run:
-      #     name: Deploy ECR if it does not exist and log into ECR
+      #     name: Deploy state architecture (terraform.tfstate bucket)
       #     command: |
-      #       cd ~/project/.service/terraform
-      #       terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
-      #       terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
-      #       export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      #       export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
-      #       aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
+      #       cd ~/project/.state/terraform
+      #       terraform init
+      #       terraform apply --auto-approve
       - run:
           name: Form and export variables to use in later steps
           command: |
             export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
             export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
-      - run:
-          name: Apply Terraform service architecture
-          command: |
-            cd ~/project/.service/terraform
-            terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
-            terraform apply -auto-approve
+            echo AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
+            echo AWS_ECR_REPO_URL=$AWS_ECR_REPO_URL
+            echo IMAGE_NAME=$IMAGE_NAME
+      # - run:
+      #     name: Apply Terraform service architecture
+      #     command: |
+      #       cd ~/project/.service/terraform
+      #       terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
+      #       terraform apply -auto-approve
       - setup_remote_docker
       - run:
           name: Build, tag, and push Docker image to ECR
