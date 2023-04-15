@@ -2,11 +2,11 @@
 # The above shebang allows execution of this Makefile
 
 SERVICE := quest
-IMAGE_NAME := ${SERVICE}-app
+IMAGE_NAME := ${SERVICE}
 AWS_ACCOUNT_ID := 310981538866
 REGION := us-east-1
+ECR_REPO_NAME := ${SERVICE}
 ECR_REPO_URL := ${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com
-ECR_REPO_NAME := ${SERVICE}-ecr-repo
 
 build:
 	docker build -t $(IMAGE_NAME):latest .
@@ -23,13 +23,15 @@ run:
 stop:
 	docker stop $(IMAGE_NAME)
 
-push: build
+ecr-login:
+	cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
 	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URL}
+
+push: build ecr-login
 	docker tag ${IMAGE_NAME}:latest ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 	docker push ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 
-push-no-build:
-	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URL}
+push-no-build: ecr-login
 	docker tag ${IMAGE_NAME}:latest ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 	docker push ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 
@@ -45,25 +47,20 @@ init-cicd:
 
 init: init-state init-service init-cicd
 
-
-deploy: build
-	aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || $(cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve)
-	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URL}
-	docker tag ${IMAGE_NAME}:latest ${ECR_REPO_URL}/${IMAGE_NAME}:latest
-	docker push ${ECR_REPO_URL}/${IMAGE_NAME}:latest
-	cd .service/terraform && terraform apply --auto-approve
-
 deploy-no-build: init-service
 	cd .service/terraform && terraform apply --auto-approve
 
-deploy-state:
+deploy-state: init-state
 	cd .state/terraform && terraform apply --auto-approve
+
+deploy-cicd: init-cicd
+	cd .cicd/terraform && terraform init && terraform apply --auto-approve
 
 deploy-ecr: init-service
 	cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
 
-deploy-cicd: init-cicd
-	cd .cicd/terraform && terraform init && terraform apply --auto-approve
+deploy-service:
+	cd .service/terraform && terraform init && terraform apply --auto-approve
 
 destroy-state:
 	cd .state/terraform && terraform destroy --auto-approve
@@ -74,8 +71,9 @@ destroy-service:
 destroy-cicd:
 	cd .cicd/terraform && terraform destroy --auto-approve
 
-ci-deploy: deploy-ecr push deploy-cicd
 
-local-deploy: deploy
+ci-deploy: deploy-state deploy-ecr deploy-cicd push
+
+local-deploy: deploy-state deploy-ecr deploy-cicd push deploy-service
 
 destroy: destroy-cicd destroy-service destroy-state

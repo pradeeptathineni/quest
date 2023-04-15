@@ -92,3 +92,8 @@
 -   When I first deployed my architecture, I was creating one target group for both HTTP and HTTPS protocols, but it turned out assigning that HTTPS target group to the HTTPS listener would not work.
 -   Turns out it was the listener that was of importance when configuring HTTPS for a target group.
 -   I had to point the HTTPS listener to the same 'HTTP' target group.
+
+### Q. Why must the AWS ECR repo name have to be the same as the image name?
+
+-   My image name was formed as quest-app. My ECR repo at one point I named as quest-ecr-repo. I was unable to do a `docker push 310981538866.dkr.ecr.us-east-1.amazonaws.com/quest-ecr-repo:latest` as the push would cause retries, suggesting that the URL is not reachable
+-   This worked once I made the two names the same.

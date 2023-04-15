@@ -1,6 +1,6 @@
 # Create ECR repository
 resource "aws_ecr_repository" "ecr_repo" {
-  name                 = "${var.service}-ecr-repo"
+  name                 = var.service
   force_delete         = true
   image_tag_mutability = "MUTABLE"
   image_scanning_configuration {
