@@ -13,8 +13,13 @@ jobs:
             sudo apt-get update
             # Install AWS CLI
             sudo apt-get -y install awscli
-            # Ensure AWS CLI is working
             aws --version
+            # Configure AWS CLI
+            aws --profile default configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws --profile default configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            # Install Terraform CLI
+            sudo apt-get -y install terraform
+            terraform --version
       - setup_remote_docker
       - run:
           name: Build, tag, and push Docker image to ECR
@@ -23,18 +28,6 @@ jobs:
             docker tag $IMAGE_NAME:$CIRCLE_SHA1 $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
-  terraform-apply:
-    docker:
-      - image: hashicorp/terraform:1.0.9
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            terraform --version
-            echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $BASH_ENV
-            echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $BASH_ENV
-            source $BASH_ENV
       - run:
           name: Apply Terraform architecture changes
           command: |
