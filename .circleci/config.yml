@@ -68,8 +68,9 @@ jobs:
             cd ../../.service/terraform
             terraform init -backend-config="bucket=$(cd .state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
             terraform apply -auto-approve
-      - run: Force redeploy service
-        command: |
+      - run: 
+          name: Force redeploy service
+          command: |
             pwd
             aws ecs update-service --cluster $(cd .service/terraform && terraform output -raw ecs_cluster_name) --service $(cd .service/terraform && terraform output -raw ecs_service_name) --force-new-deployment
 
