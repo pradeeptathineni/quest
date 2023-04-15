@@ -28,16 +28,23 @@ push: build
 	docker tag ${IMAGE_NAME}:latest ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 	docker push ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 
-push-no-build: build
+push-no-build:
 	aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URL}
 	docker tag ${IMAGE_NAME}:latest ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 	docker push ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 
-init:
+init-state:
 	cd .state/terraform && terraform init
 	cd .state/terraform && terraform apply --auto-approve
+
+init-service:
 	cd .service/terraform && terraform init -backend-config="bucket=$(shell cd .state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=${REGION}"
+
+init-cicd:
 	cd .cicd/terraform && terraform init -backend-config="bucket=$(shell cd .state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=${REGION}"
+
+init: init-state init-service init-cicd
+
 
 deploy: build
 	aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || $(cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve)
@@ -46,14 +53,20 @@ deploy: build
 	docker push ${ECR_REPO_URL}/${IMAGE_NAME}:latest
 	cd .service/terraform && terraform apply --auto-approve
 
-deploy-no-build:
+deploy-no-build: init-service
 	cd .service/terraform && terraform apply --auto-approve
 
-deploy-ecr:
+deploy-state:
+	cd .state/terraform && terraform apply --auto-approve
+
+deploy-ecr: init-service
 	cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
 
-deploy-cicd:
+deploy-cicd: init-cicd
 	cd .cicd/terraform && terraform init && terraform apply --auto-approve
+
+destroy-state:
+	cd .state/terraform && terraform destroy --auto-approve
 
 destroy-service:
 	cd .service/terraform && terraform destroy --auto-approve
@@ -61,8 +74,8 @@ destroy-service:
 destroy-cicd:
 	cd .cicd/terraform && terraform destroy --auto-approve
 
-ci-deploy: deploy-ecr deploy-cicd
+ci-deploy: deploy-ecr push deploy-cicd
 
 local-deploy: deploy
 
-destroy: destroy-cicd destroy-service
+destroy: destroy-cicd destroy-service destroy-state

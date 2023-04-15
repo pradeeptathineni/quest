@@ -1,7 +1,3 @@
-module "state" {
-  source = "../../.state/terraform"
-}
-
 terraform {
   required_providers {
     circleci = {

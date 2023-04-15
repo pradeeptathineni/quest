@@ -1,12 +1,3 @@
-module "state" {
-  source = "../../.state/terraform"
-}
-
-locals {
-  service_tfstate_bucket = module.service_terraform_state_bucket
-  region                 = var.region
-}
-
 terraform {
   required_providers {
     aws = {

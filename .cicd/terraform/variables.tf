@@ -4,6 +4,12 @@ variable "service" {
   default     = "quest"
 }
 
+variable "profile" {
+  description = "The local AWS user profile with access to the service account"
+  type        = string
+  default     = "default"
+}
+
 variable "region" {
   description = "AWS region for deploying resources"
   type        = string
