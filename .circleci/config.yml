@@ -7,18 +7,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install Terraform CLI
           command: |
-            pwd
-            # Update the apt package index
             sudo apt-get update
-            # Install AWS CLI
-            sudo apt-get -y install awscli
-            aws --version
-            # Configure AWS CLI
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
-            # Install Terraform CLI
             sudo apt-get install -y gnupg software-properties-common
             wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
             gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
@@ -26,42 +17,47 @@ jobs:
             sudo apt update
             sudo apt-get -y install terraform
             terraform --version
-      - setup_remote_docker
       - run:
-          name: Deploy state architecture
+          name: Deploy state architecture (terraform.tfstate buckets)
           command: |
-            pwd
             cd .state/terraform
             terraform init
             terraform apply --auto-approve
       - run:
+          name: Deploy cicd architecture (circleci environment variables)
+          command: |
+            cd .cicd/terraform
+            terraform init -backend-config="bucket=$(cd .state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
+            terraform apply --auto-approve
+      - run:
+          name: Install AWS CLI and configure
+          command: |
+            sudo apt-get update
+            # Install AWS CLI
+            sudo apt-get -y install awscli
+            aws --version
+            # Configure AWS CLI
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
+      - setup_remote_docker
+      - run:
           name: Deploy ECR if not exist and log into ECR
           command: |
-            pwd
             cd .service/terraform
             terraform init
             terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
       - run:
-          name: Deploy cicd architecture
-          command: |
-            pwd
-            cd .cicd/terraform
-            terraform init -backend-config="bucket=$(cd .state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
-            terraform apply --auto-approve
-      - run:
           name: Build, tag, and push Docker image to ECR
           command: |
-            pwd
-            docker build -t $IMAGE_NAME:$CIRCLE_SHA1 .
-            docker tag $IMAGE_NAME:$CIRCLE_SHA1 $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
+            docker build -t $IMAGE_NAME:latest .
+            docker tag $IMAGE_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
             aws ecr describe-repositories --repository-names $AWS_ECR_REPO_NAME || $(cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve)
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
       - run:
           name: Apply Terraform architecture changes
           command: |
-            pwd
             cd .cicd/terraform
             terraform init 
             terraform apply -auto-approve
@@ -71,7 +67,6 @@ jobs:
       - run: 
           name: Force redeploy service
           command: |
-            pwd
             aws ecs update-service --cluster $(cd .service/terraform && terraform output -raw ecs_cluster_name) --service $(cd .service/terraform && terraform output -raw ecs_service_name) --force-new-deployment
 
 workflows:
