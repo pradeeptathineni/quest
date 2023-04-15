@@ -32,6 +32,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            pwd
             terraform --version
             echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $BASH_ENV
             echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $BASH_ENV
@@ -48,12 +49,12 @@ workflows:
   version: 2
   deploy:
     jobs:
-      - build-and-push:
-          filters:
-            branches:
-              only: master
+      # - build-and-push:
+      #     filters:
+      #       branches:
+      #         only: master
       - terraform-apply:
-          requires: [build-and-push]
+          # requires: [build-and-push]
           filters:
             branches:
               only: master
