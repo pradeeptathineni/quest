@@ -5,7 +5,6 @@ SERVICE := quest
 IMAGE_NAME := ${SERVICE}
 AWS_ACCOUNT_ID := 310981538866
 REGION := us-east-1
-ECR_REPO_NAME := ${SERVICE}
 ECR_REPO_URL := ${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com
 
 build:
