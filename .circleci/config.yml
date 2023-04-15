@@ -30,13 +30,13 @@ jobs:
             [ -n "$AWS_SECRET_ACCESS_KEY" ] || (echo "ERROR: AWS_SECRET_ACCESS_KEY was not set in your CircleCI profile environment variables!" && exit 1)
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
-      - run:
-          name: Deploy state architecture (terraform.tfstate buckets)
-          command: |
-            pwd && ls -ltrha
-            cd ~/project/.state/terraform
-            terraform init
-            terraform apply --auto-approve
+      # - run:
+      #     name: Deploy state architecture (terraform.tfstate buckets)
+      #     command: |
+      #       pwd && ls -ltrha
+      #       cd ~/project/.state/terraform
+      #       terraform init
+      #       terraform apply --auto-approve
       - run:
           name: Apply cicd architecture (circleci environment variables)
           command: |
