@@ -33,12 +33,12 @@ jobs:
             # Configure AWS CLI
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
-      # - run:
-      #     name: Deploy state architecture (terraform.tfstate buckets)
-      #     command: |
-      #       cd ~/project/.state/terraform
-      #       terraform init
-      #       terraform apply --auto-approve
+      - run:
+          name: Deploy state architecture (terraform.tfstate buckets)
+          command: |
+            cd ~/project/.state/terraform
+            terraform init
+            terraform apply --auto-approve
       # - run:
       #     name: Deploy ECR if it does not exist and log into ECR
       #     command: |
