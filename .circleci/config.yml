@@ -5,6 +5,12 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - run:
+          name: Validate required environment variables were set in CircleCI project configuration
+          command: |
+            [ -n "$AWS_ACCESS_KEY_ID" ] || (echo "ERROR: AWS_ACCESS_KEY_ID was not set in your CircleCI profile environment variables!" && exit 1)
+            [ -n "$AWS_SECRET_ACCESS_KEY" ] || (echo "ERROR: AWS_SECRET_ACCESS_KEY was not set in your CircleCI profile environment variables!" && exit 1)
+            [ -n "$AWS_REGION" ] || (echo "ERROR: AWS_REGION was not set in your CircleCI profile environment variables!" && exit 1)
       - checkout
       - run:
           name: Install Terraform CLI
@@ -25,10 +31,9 @@ jobs:
             sudo apt-get -y install awscli
             aws --version
             # Configure AWS CLI
-            [ -n "$AWS_ACCESS_KEY_ID" ] || (echo "ERROR: AWS_ACCESS_KEY_ID was not set in your CircleCI profile environment variables!" && exit 1)
-            [ -n "$AWS_SECRET_ACCESS_KEY" ] || (echo "ERROR: AWS_SECRET_ACCESS_KEY was not set in your CircleCI profile environment variables!" && exit 1)
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
+            export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
       # - run:
       #     name: Deploy state architecture (terraform.tfstate buckets)
       #     command: |
@@ -36,27 +41,21 @@ jobs:
       #       terraform init
       #       terraform apply --auto-approve
       - run:
-          name: Apply cicd architecture (circleci environment variables)
-          command: |
-            cd ~/project/.cicd/terraform
-            terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
-            terraform apply --auto-approve
-      - run:
-          name: Deploy ECR if not exist and log into ECR
+          name: Deploy ECR if it does not exist and log into ECR
           command: |
             cd ~/project/.service/terraform
             terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
             terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
+            export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+            export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
       - setup_remote_docker
       - run:
           name: Build, tag, and push Docker image to ECR
           command: |
             docker build -t $IMAGE_NAME:latest .
-            docker tag $IMAGE_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
-            aws ecr describe-repositories --repository-names $AWS_ECR_REPO_NAME || $(cd ~/project/.service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve)
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
+            docker tag $IMAGE_NAME:latest $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
+            docker push $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
       - run:
           name: Apply Terraform service architecture
           command: |

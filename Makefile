@@ -41,19 +41,13 @@ init-state:
 init-service:
 	cd .service/terraform && terraform init -backend-config="bucket=$(shell cd .state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=${REGION}"
 
-init-cicd:
-	cd .cicd/terraform && terraform init -backend-config="bucket=$(shell cd .state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=${REGION}"
-
-init: init-state init-service init-cicd
+init: init-state init-service
 
 deploy-no-build: init-service
 	cd .service/terraform && terraform apply --auto-approve
 
 deploy-state: init-state
 	cd .state/terraform && terraform apply --auto-approve
-
-deploy-cicd: init-cicd
-	cd .cicd/terraform && terraform init && terraform apply --auto-approve
 
 deploy-ecr: init-service
 	cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
@@ -67,16 +61,13 @@ destroy-state:
 destroy-service:
 	cd .service/terraform && terraform destroy --auto-approve
 
-destroy-cicd:
-	cd .cicd/terraform && terraform destroy --auto-approve
-
 force-redeploy:
 	aws ecs update-service --cluster $(shell cd .service/terraform && terraform output -raw ecs_cluster_name) --service $(shell cd .service/terraform && terraform output -raw ecs_service_name) --force-new-deployment
 
-ci-deploy: deploy-state deploy-ecr deploy-cicd push
+ci-deploy: deploy-state deploy-ecr push
 
-local-deploy: deploy-state deploy-ecr deploy-cicd push deploy-service
+local-deploy: deploy-state deploy-ecr push deploy-service
 
-local-deploy-no-build: deploy-state deploy-ecr deploy-cicd deploy-service
+local-deploy-no-build: deploy-state deploy-ecr deploy-service
 
-destroy: destroy-cicd destroy-service destroy-state
+destroy: destroy-service destroy-state
