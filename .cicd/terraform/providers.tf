@@ -1,20 +1,5 @@
-# Configure AWS provider
-provider "aws" {
-  region  = var.region
-  profile = var.profile
-  default_tags {
-    tags = {
-      "Owner"       = "Pradeep Tathineni"
-      "Company"     = "Rearc"
-      "Environment" = var.environment
-      "managed_by"  = "terraform"
-    }
-  }
-}
-
-resource "aws_s3_bucket" "cicd_terraform_state" {
-  bucket = "${var.service}-cicd-tfstate-04142023"
-  acl    = "private"
+module "state" {
+  source = "../../.state/terraform"
 }
 
 terraform {
@@ -29,9 +14,22 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = aws_s3_bucket.cicd_terraform_state.bucket
-    key    = "terraform.tfstate"
-    region = var.region
+    key     = "terraform.tfstate"
+    encrypt = "true"
+  }
+}
+
+# Configure AWS provider
+provider "aws" {
+  region  = var.region
+  profile = var.profile
+  default_tags {
+    tags = {
+      "Owner"       = "Pradeep Tathineni"
+      "Company"     = "Rearc"
+      "Environment" = var.environment
+      "managed_by"  = "terraform"
+    }
   }
 }
 

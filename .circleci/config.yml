@@ -31,6 +31,7 @@ jobs:
           command: |
             docker build -t $IMAGE_NAME:$CIRCLE_SHA1 .
             docker tag $IMAGE_NAME:$CIRCLE_SHA1 $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
+            aws ecr describe-repositories --repository-names $AWS_ECR_REPO_NAME || $(cd .service/terraform && terraform init && terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve)
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$CIRCLE_SHA1
       - run:

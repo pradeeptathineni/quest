@@ -1,5 +1,19 @@
 # Quest Discussion
 
+## Steps for Deployment
+
+-   Fork this code to your Github account. Typically you would just clone it from this public repo, but to get the benefits of CircleCI for cicd, you have to have the code hosted in a Github organization you have access to.
+-   Create a CircleCI account.
+-   Connect your CircleCI account to the Github account that holds this repo.
+-   Follow the quest project under your organization. It will find the config.yml.
+-   In your CircleCI account, create an access token. This will allow Terraform to make changes to your CircleCI account,
+-   Before we can use the pipeline, we need to fill in some environemnt variables used in by the CircleCI config.yml. These will come from a terraform.tfvars file which you must edit with the strings for the following: aws_access_key_id, aws_secret_access_key, ecr_repository_url, circleci_token
+-   Ensure you have configured your AWS CLI's "default" profile to AWS credentials that have administrator access to the AWS account you want to deploy to.
+-   If you want to run in a region other than us-east-1, change that value in the topmost variables.tf file.
+-   Run make \[ci-deploy|local-deploy]. This will deploy the service infrastructure and the cicd infrastructure.
+    -   ci-deploy: CircleCI account/token -> service deploy ecr -> cicd deploy -> run pipeline in CircleCI -> any commits to master will trigger pipeline to run
+    -   local-deploy: CircleCI account/token -> service deploy -> cicd deploy -> any commits to master will trigger pipeline to run
+
 ## Service Infrastructure
 
 -   The quest's node.js app is deployed as a Docker image running on AWS ECS.

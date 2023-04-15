@@ -1,3 +1,25 @@
+module "state" {
+  source = "../../.state/terraform"
+}
+
+locals {
+  service_tfstate_bucket = module.service_terraform_state_bucket
+  region                 = var.region
+}
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">=4.17.0"
+    }
+  }
+  backend "s3" {
+    key     = "terraform.tfstate"
+    encrypt = "true"
+  }
+}
+
 # Configure AWS provider
 provider "aws" {
   region  = var.region
@@ -9,24 +31,5 @@ provider "aws" {
       "Environment" = var.environment
       "managed_by"  = "terraform"
     }
-  }
-}
-
-resource "aws_s3_bucket" "service_terraform_state" {
-  bucket = "${var.service}-service-tfstate-04142023"
-  acl    = "private"
-}
-
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">=4.17.0"
-    }
-  }
-  backend "s3" {
-    bucket = aws_s3_bucket.service_terraform_state.bucket
-    key    = "terraform.tfstate"
-    region = var.region
   }
 }
