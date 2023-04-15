@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 resource "circleci_environment_variable" "image_name" {
   project = var.service
   name    = "IMAGE_NAME"
-  value   = "quest"
+  value   = var.service
 }
 
 resource "circleci_environment_variable" "aws_account_id" {
