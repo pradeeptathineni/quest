@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build-and-push:
+  deploy:
     docker:
       - image: cimg/base:stable
     steps:
@@ -41,12 +41,7 @@ workflows:
   version: 2
   deploy:
     jobs:
-      # - build-and-push:
-      #     filters:
-      #       branches:
-      #         only: master
-      - terraform-apply:
-          # requires: [build-and-push]
+      - deploy:
           filters:
             branches:
               only: master
