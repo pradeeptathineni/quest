@@ -9,6 +9,7 @@ jobs:
       - run:
           name: Install Terraform CLI
           command: |
+            echo $(cd ~ && ls -ltrha)
             pwd && ls -ltrha
             sudo apt-get update
             sudo apt-get install -y gnupg software-properties-common
