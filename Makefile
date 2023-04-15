@@ -71,6 +71,8 @@ destroy-service:
 destroy-cicd:
 	cd .cicd/terraform && terraform destroy --auto-approve
 
+force-redeploy:
+	aws ecs update-service --cluster $(shell cd .service/terraform && terraform output -raw ecs_cluster_name) --service $(shell cd .service/terraform && terraform output -raw ecs_service_name) --force-new-deployment
 
 ci-deploy: deploy-state deploy-ecr deploy-cicd push
 
