@@ -33,7 +33,6 @@ jobs:
             # Configure AWS CLI
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
-            export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
       # - run:
       #     name: Deploy state architecture (terraform.tfstate buckets)
       #     command: |
@@ -52,6 +51,7 @@ jobs:
       - run:
           name: Form and export variables to use in later steps
           command: |
+            export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
             export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
       - run:
