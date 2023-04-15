@@ -6,8 +6,10 @@ terraform {
     }
   }
   backend "s3" {
+    region  = var.region
+    profile = var.profile
     key     = "terraform.tfstate"
-    encrypt = "true"
+    encrypt = true
   }
 }
 

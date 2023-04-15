@@ -40,28 +40,34 @@ jobs:
       #       cd ~/project/.state/terraform
       #       terraform init
       #       terraform apply --auto-approve
-      - run:
-          name: Deploy ECR if it does not exist and log into ECR
-          command: |
-            cd ~/project/.service/terraform
-            terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
-            terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
-            export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
+      # - run:
+      #     name: Deploy ECR if it does not exist and log into ECR
+      #     command: |
+      #       cd ~/project/.service/terraform
+      #       terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
+      #       terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
+      #       export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      #       export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
+      #       aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
       - setup_remote_docker
       - run:
-          name: Build, tag, and push Docker image to ECR
+          name: Form and export variables to use in later steps
           command: |
-            docker build -t $IMAGE_NAME:latest .
-            docker tag $IMAGE_NAME:latest $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
-            docker push $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
+            export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+            export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
       - run:
           name: Apply Terraform service architecture
           command: |
             cd ~/project/.service/terraform
             terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
             terraform apply -auto-approve
+      - run:
+          name: Build, tag, and push Docker image to ECR
+          command: |
+            docker build -t $IMAGE_NAME:latest .
+            docker tag $IMAGE_NAME:latest $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
+            docker push $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
       - run: 
           name: Force redeploy service
           command: |
