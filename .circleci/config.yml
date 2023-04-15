@@ -33,6 +33,7 @@ jobs:
           name: Install dependencies
           command: |
             pwd
+            ls
             terraform --version
             echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $BASH_ENV
             echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $BASH_ENV
