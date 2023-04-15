@@ -18,6 +18,18 @@ jobs:
             sudo apt-get -y install terraform
             terraform --version
       - run:
+          name: Install AWS CLI and configure
+          command: |
+            sudo apt-get update
+            # Install AWS CLI
+            sudo apt-get -y install awscli
+            aws --version
+            # Configure AWS CLI
+            [ -n "$AWS_ACCESS_KEY_ID" ] || echo "ERROR: AWS_ACCESS_KEY_ID was not set in your CircleCI profile environment variables!" && exit 1
+            [ -n "$AWS_SECRET_ACCESS_KEY" ] || echo "ERROR: AWS_SECRET_ACCESS_KEY was not set in your CircleCI profile environment variables!" && exit 1
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
+      - run:
           name: Deploy state architecture (terraform.tfstate buckets)
           command: |
             cd .state/terraform
@@ -29,16 +41,6 @@ jobs:
             cd .cicd/terraform
             terraform init -backend-config="bucket=$(cd .state/terraform && terraform output -raw cicd_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
             terraform apply --auto-approve
-      - run:
-          name: Install AWS CLI and configure
-          command: |
-            sudo apt-get update
-            # Install AWS CLI
-            sudo apt-get -y install awscli
-            aws --version
-            # Configure AWS CLI
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
       - setup_remote_docker
       - run:
           name: Deploy ECR if not exist and log into ECR
