@@ -85,6 +85,8 @@
 
 2. I felt that there should be CICD pipelines for two different types of deployments: 1) service deployments (changes to application or Dockerfile code), and 2) infrastructure deployments (changes to Terraform infrastructure). Ideally for this scenario, there would be some kind of logic to see that changes occurred in certain files, and according to that will a service deployment, infrastructure deployment, or both occur. To simplify this, I decided that the CICD will do the entire deployment every time we have changes committed and we've decided to redeploy our application (i.e. it's maintenance time at the company). This means Docker will build and tag a new image, push it to ECR, force a redeployment in ECS, and finally also apply any terraform architecture changes. The downside here is you may be waiting for things to happen that you shouldn't have to wait for, such as rebuilding and retagging an image that hasn't been changed. An upside to this is that the Docker image will be scanned for vulnerabilities every time there is a deploy, so on every deploy we can ensure we have the latest information on our application image's security posture. We can also have our pipeline service, such as AWS CodePipeline, CircleCI, or Jenkins, tag the image with the latest commit being deployed, so every deploy is related to an image uniquely identifiable by the commit.
 
+3. I would have liked to use CircleCI console to complete my testing, however I reached a blocker where the console would not allow me to view my projects. I feel like it was because I was fiddling with my CircleCI-Github connection. I made a CircleCI support ticket and hope to be contacted by them. Nevertheless, all the correct architecture and configuration for CircleCI to properly run deploys is defined in our quest project--it just needs testing.
+
 ## Questions I was left with
 
 ### Q. Why do I not have to create an AWS target group for HTTPS protocol?
@@ -97,3 +99,8 @@
 
 -   My image name was formed as quest-app. My ECR repo at one point I named as quest-ecr-repo. I was unable to do a `docker push 310981538866.dkr.ecr.us-east-1.amazonaws.com/quest-ecr-repo:latest` as the push would cause retries, suggesting that the URL is not reachable
 -   This worked once I made the two names the same.
+
+### Q. How can I programmatically create an S3 bucket for a Terraform config file backend without it needing to be created first?
+
+-   It must be created first because the "backend" block does not allow for variables. Each attribute must be supplied a hard string. Terraform is actively looking into if variables can be allowed here.
+-   For now, the best I was able to do is create a /.state folder which has Terraform config files to create these backend buckets before we initialize and apply the terraform projects that use them as backends for tfstate.

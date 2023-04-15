@@ -76,4 +76,6 @@ ci-deploy: deploy-state deploy-ecr deploy-cicd push
 
 local-deploy: deploy-state deploy-ecr deploy-cicd push deploy-service
 
+local-deploy-no-build: deploy-state deploy-ecr deploy-cicd deploy-service
+
 destroy: destroy-cicd destroy-service destroy-state
