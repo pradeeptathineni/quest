@@ -44,7 +44,7 @@ jobs:
           name: Deploy ECR if it does not exist and log into ECR
           command: |
             cd ~/project/.service/terraform
-            terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
+            terraform init && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION"
             terraform apply --target=module.ecr.aws_ecr_repository.ecr_repo --auto-approve
             export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
