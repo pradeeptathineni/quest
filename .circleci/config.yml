@@ -58,7 +58,6 @@ jobs:
           name: Apply Terraform service architecture
           command: |
             cd ~/project/.service/terraform
-            terraform init
             terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
             terraform apply -auto-approve
       - setup_remote_docker
