@@ -6,6 +6,7 @@ terraform {
     }
   }
   backend "s3" {
+    bucket  = "rearc-quest-terraform-state-0423"
     key     = "terraform.tfstate"
     encrypt = true
   }

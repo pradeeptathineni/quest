@@ -1,17 +1,17 @@
-resource "aws_s3_bucket" "service_terraform_state" {
-  bucket        = "${var.service}-service-tfstate-042023"
+resource "aws_s3_bucket" "terraform_state_bucket" {
+  bucket        = "rearc-quest-terraform-state-0423"
   force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "service_bucket_versioning" {
-  bucket = aws_s3_bucket.service_terraform_state.id
+  bucket = aws_s3_bucket.terraform_state_bucket.id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_public_access_block" "service_bucket_block" {
-  bucket                  = aws_s3_bucket.service_terraform_state.id
+  bucket                  = aws_s3_bucket.terraform_state_bucket.id
   block_public_acls       = true
   block_public_policy     = false
   ignore_public_acls      = true
@@ -19,7 +19,7 @@ resource "aws_s3_bucket_public_access_block" "service_bucket_block" {
 }
 
 resource "aws_s3_bucket_policy" "service_bucket_policy" {
-  bucket = aws_s3_bucket.service_terraform_state.id
+  bucket = aws_s3_bucket.terraform_state_bucket.id
   policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -32,8 +32,8 @@ resource "aws_s3_bucket_policy" "service_bucket_policy" {
           "s3:*"
         ],
         "Resource" : [
-          "${aws_s3_bucket.service_terraform_state.arn}",
-          "${aws_s3_bucket.service_terraform_state.arn}/*"
+          "${aws_s3_bucket.terraform_state_bucket.arn}",
+          "${aws_s3_bucket.terraform_state_bucket.arn}/*"
         ]
       }
     ]
@@ -41,7 +41,7 @@ resource "aws_s3_bucket_policy" "service_bucket_policy" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "service_bucket_sse" {
-  bucket = aws_s3_bucket.service_terraform_state.id
+  bucket = aws_s3_bucket.terraform_state_bucket.id
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"

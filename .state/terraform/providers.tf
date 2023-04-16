@@ -5,6 +5,11 @@ terraform {
       version = ">=4.17.0"
     }
   }
+  backend "s3" {
+    bucket  = "rearc-quest-terraform-state"
+    key     = "state/terraform.tfstate"
+    encrypt = true
+  }
 }
 
 # Configure AWS provider
@@ -20,3 +25,4 @@ provider "aws" {
     }
   }
 }
+

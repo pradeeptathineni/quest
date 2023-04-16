@@ -104,3 +104,17 @@
 
 -   It must be created first because the "backend" block does not allow for variables. Each attribute must be supplied a hard string. Terraform is actively looking into if variables can be allowed here.
 -   For now, the best I was able to do is create a /.state folder which has Terraform config files to create these backend buckets before we initialize and apply the terraform projects that use them as backends for tfstate.
+
+### Q. Why does Terraform work in such a way that, if I want to use an S3 bucket as backend for my terraform.state file, the S3 bucket has to exist prior and cannot be created within the same Terraform configuration file?
+
+-   This was the largest project logic changer for me, as in the very beginning I was thinking to keep another terraform project under .state/terraform that simply created the bucket that will be used as backend for the .service/terraform project.
+-   I found out later in my CircleCI builds that I would need to save the state of this .state/terraform project too so I could retrieve its outputs from that same state file, namely an output called service_terraform_state_bucket which I would use to pass to `terraform init -backend-config="bucket=$service_terraform_state_bucket"`. This was my workaround to programatically creating a bucket for a backend, which refuses to take a variable name in its block.
+-   Seeing that I was headed down a rabbit-hole of state bucket recursion, I thought why not just hard-code the bucket name, and even provide the same bucket name for the .state/terraform project backend? No need to get any output from some terraform.state file to programatically configure the backend in .service/terraform right? I could even use the same bucket to save the terraform.tfstate created by applying the .state/terraform project.
+-   However this is when I had the big realization that if I don't need the .state/terraform project's terraform.state to have the output of the state bucket's name, there's no point of having the backend for it. So I'll just port over all the state bucket resources to my .service/terraform project where the backend uses that bucket resource.
+-   Wrong, as terraform init, which initializes the connection to the backend, happens before a terraform apply, which would be the action to create the bucket.
+-   The lesson learned: You just have to create a bucket beforehand. Don't use Terraform to create your backend bucket.
+-   I mean, you can, but don't. Because you're going to end up using terraform init and terraform apply for creating the bucket resources every time, and terraform init not having any backend to refer to previous state changes would error out every subsequent time as the bucket already exists.
+-   To fix this, you would need to use aws cli to see if the bucket exists, and if not then do the terraform init and apply.
+-   With all this effort, I would rather just use the aws cli to find the bucket by hard-coded name, and if it doesn't exist then create it with the aws cli.
+-   But seeing as I already wrote the terraform project for handling the state bucket creation, I opted to just use aws cli to check if the bucket exists and if not then perform the terraform apply and init.
+-   The only major downside is that the bucket name is hard-coded in the .state/terraform/main.tf, .state/terraform/providers.tf, and .circleci/config.yml.
