@@ -56,11 +56,11 @@ jobs:
             IMAGE_NAME=$(terraform output -raw image_name)
             echo "export IMAGE_NAME=$IMAGE_NAME" >> "$BASH_ENV"
             source $BASH_ENV
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Build, tag, and push Docker image to ECR
           command: |
-            ulimit -n 65536 in /etc/init.d/docker
-            sudo service docker start
             docker build -t $IMAGE_NAME:latest .
             docker tag $IMAGE_NAME:latest $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
