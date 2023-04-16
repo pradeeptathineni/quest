@@ -1,18 +1,49 @@
 # Quest Discussion
 
-## Steps for Deployment
+## Steps to Deploy
 
--   Fork this code to your Github account. Typically you would just clone it from this public repo, but to get the benefits of CircleCI for cicd, you have to have the code hosted in a Github organization you have access to.
--   Create a CircleCI account.
--   Connect your CircleCI account to the Github account that holds this repo.
--   Follow the quest project under your organization. It will find the config.yml.
--   In your CircleCI account, create an access token. This will allow Terraform to make changes to your CircleCI account,
--   Before we can use the pipeline, we need to fill in some environemnt variables used in by the CircleCI config.yml. These will come from a terraform.tfvars file which you must edit with the strings for the following: aws_access_key_id, aws_secret_access_key, ecr_repository_url, circleci_token
--   Ensure you have configured your AWS CLI's "default" profile to AWS credentials that have administrator access to the AWS account you want to deploy to.
--   If you want to run in a region other than us-east-1, change that value in the topmost variables.tf file.
--   Run make \[ci-deploy|local-deploy]. This will deploy the service infrastructure and the cicd infrastructure.
-    -   ci-deploy: CircleCI account/token -> service deploy ecr -> cicd deploy -> run pipeline in CircleCI -> any commits to master will trigger pipeline to run
-    -   local-deploy: CircleCI account/token -> service deploy -> cicd deploy -> any commits to master will trigger pipeline to run
+### CircleCI Deploy (Fun)
+
+-   After having git, docker, terraform, and the AWS CLI installed, run the following commands to deploy the app:
+-   Clone this repo: `git clone https://github.com/pradeeptathineni/quest`
+    -   Commit changes where you update variables in \*/terraform/variables.tf:
+        1. service (must be the same name as this repo)
+        2. profile (default has been tested but feel free to try another)
+        3. region (your preferred AWS region to deploy in)
+-   Create a [CircleCI account](https://circleci.com/), or authenticate using Github.
+-   Go to the [CircleCI application](https://app.circleci.com/dashboard).
+    -   Connect it to your Github organization that holds this repo.
+    -   Add this repo as a project; follow this project in CircleCI.
+    -   Configure project settings for this repo in the top right corner, and add the following environment variables with the values you choose:
+        1. AWS_REGION (must follow the region variable you set in \*/terraform/variables.tf)
+        2. AWS_ACCESS_KEY_ID (aws creds must have admin access)
+        3. AWS_SECRET_ACCESS_KEY (aws creds must have admin access)
+-   When you want to deploy:
+    -   Go back to your repo locally where you cloned it.
+    -   Commit a change where you uncomment the workflow named "deploy" in the .circleci/config.yml.
+    -   This will cause the CircleCI project project to trigger a pipeline for the destroy job.
+    -   Congratulations, you just began the first CircleCI pipeline!
+    -   Any subsequent changes pushed to the master branch (commits, pull requests, etc) will trigger this pipeline.
+-   When you want to destroy the architecture:
+    -   Go back to your repo locally where you cloned it.
+    -   Commit a change where you comment the workflow named "deploy" and uncomment the workflow named "destroy" in the .circleci/config.yml.
+    -   This will cause the CircleCI project to trigger a pipeline for the destroy job.
+
+### Local Deploy (Less Fun)
+
+-   After having git, docker, terraform, and the AWS CLI installed, run the following commands to deploy the app:
+-   Clone this repo: `git clone https://github.com/pradeeptathineni/quest`
+    -   Commit a change where you update the Makefile's variables :
+        1. SERVICE (must be the same name as this repo)
+        2. AWS_ACCOUNT_ID (your AWS account ID)
+        3. REGION (your preferred AWS region to deploy in)
+-   Configure your AWS CLI default profile: `aws configure`
+-   When you want to deploy the architecture:
+    -   Run `make local-deploy`
+-   When you want to destroy the architecture:
+    -   Run `make destroy`
+
+#### PLEASE NOTE: If you delete the Terraform state bucket before you wipe the Terraform service architecture, you may be in a pickle that requires you to manually delete all those AWS resources. To avoid this, follow the automated steps defined here.
 
 ## Service Infrastructure
 
@@ -33,27 +64,7 @@
 
 ## Twelve Factor:
 
--   The Twelve-Factor methodology is a set of principles for building modern, scalable, and maintainable software applications. The factors include: codebase, dependencies, configuration, backing services, build, release, run, processes, port binding, concurrency, disposability, dev/prod parity, logs, and admin processes. These factors are intended to promote best practices in software development. By following these principles, developers can build applications that are easier to maintain, scale, and deploy, and that are adaptable to changing requirements and environments. The 12 factors can be described as the following (https://dzone.com/articles/12-factor-app-principles-and-cloud-native-microser):
-
-    1. Codebase: One codebase tracked in revision control, many deploys. `Each application should have a single codebase that is tracked in a version control system, such as Git. This allows for easy collaboration and versioning.`
-    2. Dependencies: Explicitly declare and isolate dependencies. `All dependencies for an application should be explicitly declared and isolated using a package manager or other tools. This helps to ensure that the application can be easily built and deployed in different environments.`
-    3. Configuration: Store configuration in the environment. `Configuration information should be stored in environment variables, rather than hard-coded in the application code. This allows for easy configuration changes without the need to recompile the code.`
-    4. Backing services: Treat backing services as attached resources. `External services, such as databases or messaging queues, should be treated as attached resources that can be easily swapped out or scaled independently. This helps to ensure that the application can be easily adapted to changing business requirements.`
-    5. Build, release, run: Strictly separate build and run stages. `The build, release, and run stages of an application should be strictly separated, with each stage having its own environment and tools. This helps to ensure that the application can be easily built, tested, and deployed in different environments.`
-    6. Processes: Execute the app as one or more stateless processes. `An application should be designed to run as a set of stateless processes, which can be easily scaled up or down depending on the demand. This helps to ensure that the application can handle changing user loads without downtime or performance issues.`
-    7. Port binding: Export services via port binding. `An application should export its services via a network port, rather than relying on internal function calls or library dependencies. This allows for easy communication with other services and systems.`
-    8. Concurrency: Scale out via the process model. `An application should be designed to scale out by running multiple instances of the same process, rather than relying on multi-threading or other techniques. This helps to ensure that the application can handle high loads and maintain performance.`
-    9. Disposability: Maximize robustness with fast startup and graceful shutdown. `An application should be designed to start up quickly and shut down gracefully, in order to minimize downtime and maximize uptime. This helps to ensure that the application can be easily maintained and updated.`
-    10. Dev/prod parity: Keep development, staging, and production as similar as possible. `An application should be designed to work the same way in development, staging, and production environments, in order to minimize differences and reduce the risk of errors. This helps to ensure that the application can be easily tested and deployed in different environments.`
-    11. Logs: Treat logs as event streams. `An application should generate logs as a stream of events, which can be easily collected, analyzed, and searched. This helps to ensure that the application can be easily monitored and debugged.`
-    12. Admin processes: Run admin/management tasks as one-off processes. `Administrative tasks, such as database migrations or backups, should be run as one-off processes, rather than being integrated into the application code. This helps to ensure that the application code remains focused on its core functionality.`
-
--   In addition to the main factors, there are a few other important points to keep in mind:
-
-    -   Portability: Applications should be designed to be as portable as possible, meaning that they can be easily moved between different infrastructure providers or hosting environments.
-    -   Stateless architecture: Applications should be designed to be stateless whenever possible, meaning that they don't rely on stored state information. This makes it easier to scale and maintain the application.
-    -   Automation: As much of the deployment and management process as possible should be automated, in order to minimize human error and make it easier to manage the application at scale.
-    -   Testability: Applications should be designed to be easily testable, with automated testing built into the development process. This helps to ensure that the application is reliable and performs as expected.
+-   The Twelve-Factor methodology is a set of principles for building modern, scalable, and maintainable software applications. The factors include: codebase, dependencies, configuration, backing services, build, release, run, processes, port binding, concurrency, disposability, dev/prod parity, logs, and admin processes. These factors are intended to promote best practices in software development. By following these principles, developers can build applications that are easier to maintain, scale, and deploy, and that are adaptable to changing requirements and environments.
 
 -   The application architecture of this quest app tries to accomplish the Twelve Factor practice in the following ways:
 
@@ -89,6 +100,10 @@
 4. If I could figure out how to update my ECS task's image tag to anything I want whenever, then I would tag the built docker image of our service with the $CIRCLE_SHA value, which would be the commit of the current build. This would allow greater versioning control of our docker images instead of just writing over "latest" every time. I bet I could do this through aws cli. Use [update-service](https://docs.aws.amazon.com/cli/latest/reference/ecs/update-service.html) to update the task definition, perhaps with a newly created one. [register-task-definition](https://docs.aws.amazon.com/cli/latest/reference/ecs/register-task-definition.html) and [deregister-task-definition](https://docs.aws.amazon.com/cli/latest/reference/ecs/deregister-task-definition.html).
 
 5. There must be to be a better way of porting output variables between Terraform config files.
+
+6. Something very valuable to accomplish next would be the use of multiple environments (development, test, production, etc) split between multiple AWS accounts, with different branches for each environment, each of which can be configured in CircleCI as their own CICD projects.
+
+7. We can also try to lock down permissions to the most granular so that the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are not admin access. This was done for ease.
 
 ## Questions I was left with
 
