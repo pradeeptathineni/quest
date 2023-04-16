@@ -44,9 +44,11 @@ jobs:
           command: |
             export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
             export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            bucket=$(cd ~/project/.state/terraform && terraform init && terraform output -raw service_terraform_state_bucket)
-            echo bucket=$bucket
-            export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform init && terraform output -raw image_name)
+            cd ~/project/.state/terraform
+            terraform init
+            export BUCKET=$(terraform output -raw service_terraform_state_bucket)
+            export IMAGE_NAME=$(terraform output -raw image_name)
+            echo BUCKET=$BUCKET
             echo AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
             echo AWS_ECR_REPO_URL=$AWS_ECR_REPO_URL
             echo IMAGE_NAME=$IMAGE_NAME
@@ -55,7 +57,7 @@ jobs:
       #     name: Apply Terraform service architecture
       #     command: |
       #       cd ~/project/.service/terraform
-      #       terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
+      #       terraform init -backend-config="BUCKET=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY"
       #       terraform apply -auto-approve
       - setup_remote_docker
       - run:
