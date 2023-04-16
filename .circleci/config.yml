@@ -59,8 +59,8 @@ jobs:
       - run:
           name: Build, tag, and push Docker image to ECR
           command: |
-            sudo service docker start
             ulimit -n 65536 in /etc/init.d/docker
+            sudo service docker start
             docker build -t $IMAGE_NAME:latest .
             docker tag $IMAGE_NAME:latest $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
