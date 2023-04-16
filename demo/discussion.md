@@ -103,9 +103,11 @@
 
 5. There must be to be a better way of porting output variables between Terraform config files.
 
-6. Something very valuable to accomplish next would be the use of multiple environments (development, test, production, etc) split between multiple AWS accounts, with different branches for each environment, each of which can be configured in CircleCI as their own CICD projects.
+6. We can also try to lock down permissions to the most granular so that the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are not admin access. This was done for ease.
 
-7. We can also try to lock down permissions to the most granular so that the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are not admin access. This was done for ease.
+7. Something very valuable to accomplish next would be the use of multiple environments (development, test, production, etc) split between multiple AWS accounts, with different branches for each environment, each of which can be configured in CircleCI as their own CICD projects.
+
+8. I would also like to use Route53 to route the loadbalancer DNS to a domain name of my own, also enabling me to host dev.domain-example.com and prod.domain-example.com spaces.
 
 ## Questions I was left with
 
