@@ -88,6 +88,8 @@
 
 4. If I could figure out how to update my ECS task's image tag to anything I want whenever, then I would tag the built docker image of our service with the $CIRCLE_SHA value, which would be the commit of the current build. This would allow greater versioning control of our docker images instead of just writing over "latest" every time. I bet I could do this through aws cli. Use [update-service](https://docs.aws.amazon.com/cli/latest/reference/ecs/update-service.html) to update the task definition, perhaps with a newly created one. [register-task-definition](https://docs.aws.amazon.com/cli/latest/reference/ecs/register-task-definition.html) and [deregister-task-definition](https://docs.aws.amazon.com/cli/latest/reference/ecs/deregister-task-definition.html).
 
+5. There must be to be a better way of porting output variables between Terraform config files.
+
 ## Questions I was left with
 
 ### Q. Why do I not have to create an AWS target group for HTTPS protocol?
