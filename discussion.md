@@ -28,9 +28,8 @@
 ## CICD Infrastructure
 
 -   I created an AWS S3 bucket to serve as backend to this service's Terraform project state file (terraform.tfstate). This is a good practice for several reasons:
-    -   Separation of Concerns: Keeping the Terraform configuration files and state files separate can help reduce the risk of accidentally overwriting or deleting critical files. It also makes it easier to manage access control for each bucket separately.
-    -   Versioning: It's a good practice to enable versioning on S3 buckets that store critical files. However, having both configuration files and state files in the same bucket could lead to confusion when trying to identify the right version of a specific file.
-    -   Performance: Terraform state files can grow quite large, especially for larger infrastructures. Storing them in a separate S3 bucket can help prevent performance issues with the bucket used for configuration files.
+-   CircleCI runs a pipeline defined by .circleci/config.yml every time changes are pushed to the master branch of our repo.
+-   Using a CircleCI virtual machine image of cimg/aws versus cimg/node and having to install aws cli allowed me to cut my pipeline runtime in half.
 
 ## Twelve Factor:
 

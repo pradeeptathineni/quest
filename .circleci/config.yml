@@ -54,8 +54,9 @@ jobs:
             terraform init -backend-config="region=$AWS_REGION"
             terraform apply -auto-approve
             IMAGE_NAME=$(terraform output -raw image_name)
+            export IMAGE_NAME=$IMAGE_NAME
             echo IMAGE_NAME=$IMAGE_NAME
-            echo 'export IMAGE_NAME=$IMAGE_NAME' >> "$BASH_ENV"
+            echo "export IMAGE_NAME=$IMAGE_NAME" >> "$BASH_ENV"
             source $BASH_ENV
       - run:
           name: Build, tag, and push Docker image to ECR
