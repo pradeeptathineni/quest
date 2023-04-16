@@ -120,12 +120,12 @@ jobs:
 
 workflows:
   version: 2
-  # deploy:
-  #   jobs:
-  #     - deploy:
-  #         filters:
-  #           branches:
-  #             only: master
+  deploy:
+    jobs:
+      - deploy:
+          filters:
+            branches:
+              only: master
   # destroy:
   #   jobs:
   #     - destroy:
