@@ -119,16 +119,16 @@ jobs:
             fi
 
 workflows:
-#   version: 2
-#   deploy:
-#     jobs:
-#       - deploy:
-#           filters:
-#             branches:
-#               only: master
-  destroy:
-    jobs:
-      - destroy:
-          filters:
-            branches:
-              only: master
+  version: 2
+  # deploy:
+  #   jobs:
+  #     - deploy:
+  #         filters:
+  #           branches:
+  #             only: master
+  # destroy:
+  #   jobs:
+  #     - destroy:
+  #         filters:
+  #           branches:
+  #             only: master
