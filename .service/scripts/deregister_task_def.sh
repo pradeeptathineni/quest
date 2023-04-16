@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# https://stackoverflow.com/questions/35045264/how-do-you-delete-an-aws-ecs-task-definition
 
 REGION="us-east-1"
 
