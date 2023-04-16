@@ -45,6 +45,8 @@
 
 #### PLEASE NOTE: If you delete the Terraform state bucket before you wipe the Terraform service architecture, you may be in a pickle that requires you to manually delete all those AWS resources. To avoid this, follow the automated steps defined here.
 
+---
+
 ### Q. What is this quest?
 
 It is a fun way to assess your cloud skills. It is also a good representative sample of the work we do at Rearc. Quest is a webapp made with node.js and golang.
