@@ -107,12 +107,14 @@ jobs:
             aws s3 rb s3://$TERRAFORM_STATE_BUCKET --force
 workflows:
   version: 2
-  deploy:
+  # deploy:
+  #   jobs:
+  #     - deploy:
+  #         filters:
+  #           branches:
+  #             only: master
+  destroy:
     jobs:
-      # - deploy:
-      #     filters:
-      #       branches:
-      #         only: master
       - destroy:
           filters:
             branches:
