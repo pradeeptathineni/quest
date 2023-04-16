@@ -44,7 +44,7 @@ jobs:
           command: |
             export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
             export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform output -raw image_name)
+            export IMAGE_NAME=$(cd ~/project/.service/terraform && terraform init -backend-config="bucket=$(cd ~/project/.state/terraform && terraform output -raw service_terraform_state_bucket)" -backend-config="region=$AWS_REGION" -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY" && terraform output -raw image_name)
             echo AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
             echo AWS_ECR_REPO_URL=$AWS_ECR_REPO_URL
             echo IMAGE_NAME=$IMAGE_NAME
