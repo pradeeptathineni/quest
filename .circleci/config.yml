@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   deploy:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/aws:2023.04
     environment:
       TERRAFORM_STATE_BUCKET: "rearc-quest-terraform-state-0423"
     steps:
@@ -26,13 +26,8 @@ jobs:
             sudo apt-get -y install terraform
             terraform --version
       - run:
-          name: Install AWS CLI and configure
+          name: Configure AWS CLI
           command: |
-            sudo apt-get update
-            # Install AWS CLI
-            sudo apt-get -y install awscli
-            aws --version
-            # Configure AWS CLI
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
       - run:
@@ -62,7 +57,6 @@ jobs:
             echo IMAGE_NAME=$IMAGE_NAME
             echo 'export IMAGE_NAME=$IMAGE_NAME' >> "$BASH_ENV"
             source $BASH_ENV
-      - setup_remote_docker
       - run:
           name: Build, tag, and push Docker image to ECR
           command: |
