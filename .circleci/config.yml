@@ -42,11 +42,11 @@ jobs:
       - run:
           name: Form and export variables to use in later steps
           command: |
-            export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
-            export AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            echo AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
-            echo AWS_ECR_REPO_URL=$AWS_ECR_REPO_URL
-            echo IMAGE_NAME=$IMAGE_NAME
+            AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text | cat)
+            AWS_ECR_REPO_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+            echo "export AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> "$BASH_ENV"
+            echo "export AWS_ECR_REPO_URL=$AWS_ECR_REPO_URL" >> "$BASH_ENV"
+            source $BASH_ENV
       - run:
           name: Apply Terraform service architecture
           command: |
@@ -54,17 +54,12 @@ jobs:
             terraform init -backend-config="region=$AWS_REGION"
             terraform apply -auto-approve
             IMAGE_NAME=$(terraform output -raw image_name)
-            export IMAGE_NAME=$IMAGE_NAME
-            echo IMAGE_NAME=$IMAGE_NAME
             echo "export IMAGE_NAME=$IMAGE_NAME" >> "$BASH_ENV"
             source $BASH_ENV
       - run:
           name: Build, tag, and push Docker image to ECR
           command: |
-            echo "---- START OF BASH_ENV ----"
-            cat $BASH_ENV
-            echo "---- END OF BASH_ENV ----"
-            service docker start
+            sudo dockerd
             docker build -t $IMAGE_NAME:latest .
             docker tag $IMAGE_NAME:latest $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
