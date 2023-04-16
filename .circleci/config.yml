@@ -107,7 +107,8 @@ jobs:
             aws s3api delete-objects --bucket $TERRAFORM_STATE_BUCKET --delete "$(aws s3api list-object-versions --bucket $TERRAFORM_STATE_BUCKET --query='{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}')"
             aws s3 rb s3://$TERRAFORM_STATE_BUCKET --force
             aws s3api delete-bucket --bucket $TERRAFORM_STATE_BUCKET
-# workflows:
+            
+workflows:
 #   version: 2
 #   deploy:
 #     jobs:
