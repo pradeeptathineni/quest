@@ -9,6 +9,8 @@ package-lock.json
 
 README.md
 
+demo
+
 # Exclude certificate files
 *.crt
 *.csr

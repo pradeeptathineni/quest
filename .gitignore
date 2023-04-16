@@ -4,6 +4,8 @@ package-lock.json
 
 **/.DS_Store
 
+demo
+
 # Exclude certificate files
 *.crt
 *.csr
