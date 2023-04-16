@@ -1,9 +1,5 @@
-data "aws_caller_identity" "current" {}
-
-locals {
-  account_id = data.aws_caller_identity.current.account_id
-}
-
+# Reference the network module
+# (module) network : Defines the Terraform resources for creating an AWS VPC, two public subnets, and one private subnet to support our service's AWS resources
 module "network" {
   source      = "./modules/network"
   service     = var.service
@@ -12,6 +8,8 @@ module "network" {
   environment = var.environment
 }
 
+# Reference the ecr module
+# (module) ecr : Defines the Terraform resources for creating an AWS ECR repository to contain and record the Docker images of our service
 module "ecr" {
   source      = "./modules/ecr"
   service     = var.service
@@ -20,6 +18,8 @@ module "ecr" {
   environment = var.environment
 }
 
+# Reference the alb module
+# (module) alb : Defines the Terraform resources for creating an AWS application loadbalancer to route HTTP and HTTPS traffic to our service
 module "alb" {
   source             = "./modules/alb"
   service            = var.service
@@ -31,6 +31,8 @@ module "alb" {
   public_subnet_b_id = module.network.public_subnet_b_id
 }
 
+# Reference the ecs module
+# (module) ecs : Defines the Terraform resources for creating an ECS cluster, task, and service to run our service's Docker image in a serverless container environment
 module "ecs" {
   source             = "./modules/ecs"
   service            = var.service

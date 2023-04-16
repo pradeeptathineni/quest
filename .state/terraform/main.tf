@@ -1,24 +1,31 @@
+# Create a data source for the current AWS user, which should be the "default" profile
+data "aws_caller_identity" "current" {}
+
+# Create S3 bucket for storing Terraform state files
 resource "aws_s3_bucket" "terraform_state_bucket" {
   bucket        = "rearc-quest-terraform-state-0423"
-  force_destroy = true
+  force_destroy = true # delete the bucket even if it contains objects
 }
 
-resource "aws_s3_bucket_versioning" "service_bucket_versioning" {
+# Enable versioning for the Terraform state bucket
+resource "aws_s3_bucket_versioning" "state_bucket_versioning" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "service_bucket_block" {
+# Block public access to the Terraform state bucket
+resource "aws_s3_bucket_public_access_block" "state_bucket_block" {
   bucket                  = aws_s3_bucket.terraform_state_bucket.id
-  block_public_acls       = true
-  block_public_policy     = false
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = true # block public access to ACLs
+  block_public_policy     = true # block public access to bucket policy
+  ignore_public_acls      = true # ignore public ACLs when checking for bucket access
+  restrict_public_buckets = true # prevent public access to the bucket itself
 }
 
-resource "aws_s3_bucket_policy" "service_bucket_policy" {
+# Add a policy to the Terraform state bucket to allow only the current AWS user (profile "default") to perform any S3 actions on the bucket
+resource "aws_s3_bucket_policy" "state_bucket_policy" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
   policy = jsonencode({
     "Version" : "2012-10-17",
@@ -26,7 +33,7 @@ resource "aws_s3_bucket_policy" "service_bucket_policy" {
       {
         "Effect" : "Allow",
         "Principal" : {
-          "AWS" : "*"
+          "AWS" : "${data.aws_caller_identity.current.arn}"
         },
         "Action" : [
           "s3:*"
@@ -40,7 +47,8 @@ resource "aws_s3_bucket_policy" "service_bucket_policy" {
   })
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "service_bucket_sse" {
+# Enable server-side encryption for the Terraform state bucket
+resource "aws_s3_bucket_server_side_encryption_configuration" "state_bucket_sse" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
   rule {
     apply_server_side_encryption_by_default {

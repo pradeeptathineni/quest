@@ -1,4 +1,6 @@
+# Define the required provider and backend for the Terraform state
 terraform {
+  # Specifies the providers used in the configuration
   required_providers {
     aws = {
       source  = "hashicorp/aws"
