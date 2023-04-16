@@ -64,6 +64,8 @@ jobs:
             echo "---- START OF BASH_ENV ----"
             cat $BASH_ENV
             echo "---- END OF BASH_ENV ----"
+            systemctl start docker
+            systemctl enable docker
             docker build -t $IMAGE_NAME:latest .
             docker tag $IMAGE_NAME:latest $AWS_ECR_REPO_URL/$IMAGE_NAME:latest
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REPO_URL
