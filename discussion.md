@@ -86,6 +86,8 @@
 
 3. I would have liked to use CircleCI console to complete my testing, however I reached a blocker where the console would not allow me to view my projects. I feel like it was because I was fiddling with my CircleCI-Github connection. I made a CircleCI support ticket and hope to be contacted by them. Nevertheless, all the correct architecture and configuration for CircleCI to properly run deploys is defined in our quest project--it just needs testing.
 
+4. If I could figure out how to update my ECS task's image tag to anything I want whenever, then I would tag the built docker image of our service with the $CIRCLE_SHA value, which would be the commit of the current build. This would allow greater versioning control of our docker images instead of just writing over "latest" every time. I bet I could do this through aws cli. Use [update-service](https://docs.aws.amazon.com/cli/latest/reference/ecs/update-service.html) to update the task definition, perhaps with a newly created one. [register-task-definition](https://docs.aws.amazon.com/cli/latest/reference/ecs/register-task-definition.html) and [deregister-task-definition](https://docs.aws.amazon.com/cli/latest/reference/ecs/deregister-task-definition.html).
+
 ## Questions I was left with
 
 ### Q. Why do I not have to create an AWS target group for HTTPS protocol?

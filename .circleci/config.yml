@@ -69,12 +69,51 @@ jobs:
           name: Force redeploy service
           command: |
             aws ecs update-service --cluster $(cd ~/project/.service/terraform && terraform output -raw ecs_cluster_name) --service $(cd .service/terraform && terraform output -raw ecs_service_name) --force-new-deployment
-
+  destroy:
+    docker:
+      - image: cimg/aws:2023.04
+    environment:
+      TERRAFORM_STATE_BUCKET: "rearc-quest-terraform-state-0423"
+    steps:
+      - run:
+          name: Validate required environment variables were set in CircleCI project configuration
+          command: |
+            [ -n "$AWS_ACCESS_KEY_ID" ] || (echo "ERROR: AWS_ACCESS_KEY_ID was not set in your CircleCI profile environment variables" && exit 1)
+            [ -n "$AWS_SECRET_ACCESS_KEY" ] || (echo "ERROR: AWS_SECRET_ACCESS_KEY was not set in your CircleCI profile environment variables" && exit 1)
+            [ -n "$AWS_REGION" ] || (echo "ERROR: AWS_REGION was not set in your CircleCI profile environment variables" && exit 1)
+      - checkout
+      - run:
+          name: Install Terraform CLI
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y gnupg software-properties-common
+            wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+            gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
+            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+            sudo apt update
+            sudo apt-get -y install terraform
+            terraform --version
+      - run:
+          name: Configure AWS CLI
+          command: |
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
+      - run:
+          name: Destroy Terraform architecture
+          command: |
+            cd ~/project/.service/terraform
+            terraform init -backend-config="region=$AWS_REGION"
+            terraform destroy -auto-approve
+            aws s3 rb s3://$TERRAFORM_STATE_BUCKET --force
 workflows:
   version: 2
   deploy:
     jobs:
-      - deploy:
+      # - deploy:
+      #     filters:
+      #       branches:
+      #         only: master
+      - destroy:
           filters:
             branches:
               only: master
