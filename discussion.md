@@ -45,6 +45,8 @@
 
 #### PLEASE NOTE: If you delete the Terraform state bucket before you wipe the Terraform service architecture, you may be in a pickle that requires you to manually delete all those AWS resources. To avoid this, follow the automated steps defined here.
 
+---
+
 ## Service Infrastructure
 
 -   The quest's node.js app is deployed as a Docker image running on AWS ECS.
