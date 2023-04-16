@@ -58,7 +58,9 @@ jobs:
             cd ~/project/.service/terraform
             terraform init -backend-config="region=$AWS_REGION"
             terraform apply -auto-approve
-            echo 'export IMAGE_NAME=$(terraform output -raw image_name)' >> "$BASH_ENV"
+            IMAGE_NAME=$(terraform output -raw image_name)
+            echo IMAGE_NAME=$IMAGE_NAME
+            echo 'export IMAGE_NAME=$IMAGE_NAME' >> "$BASH_ENV"
             source $BASH_ENV
       - setup_remote_docker
       - run:
