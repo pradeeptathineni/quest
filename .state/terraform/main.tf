@@ -1,4 +1,4 @@
-# Create a data source for the current AWS user, which should be the "default" profile
+# Create a data source for the current AWS user
 data "aws_caller_identity" "current" {}
 
 # Create S3 bucket for storing Terraform state files
@@ -24,7 +24,7 @@ resource "aws_s3_bucket_public_access_block" "state_bucket_block" {
   restrict_public_buckets = true # prevent public access to the bucket itself
 }
 
-# Add a policy to the Terraform state bucket to allow only the current AWS user (profile "default") to perform any S3 actions on the bucket
+# Add a policy to the Terraform state bucket to allow only the current AWS user to perform any S3 actions on the bucket
 resource "aws_s3_bucket_policy" "state_bucket_policy" {
   bucket = aws_s3_bucket.terraform_state_bucket.id
   policy = jsonencode({
