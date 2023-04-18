@@ -82,13 +82,13 @@ When you want to destroy the architecture:
 
 ## Usage
 
-Once the infrastructure is deployed, you can access the weba application by navigating to the public DNS address of the loadbalancer in your web browser. You can find the public IP address in the Terraform output or in the AWS EC2 console.
+Once the infrastructure is deployed, you can access the web application by navigating to the public DNS address of the loadbalancer in your web browser. You can find the public IP address in the Terraform output or in the AWS EC2 console.
 
 Every time a change is pushed to the master branch, such as a commit or pull request, the CircleCI pipeline will kick off the workflow defined in the .circleci/config.yml file. Remember to update and commit the workflows as needed.
 
 The Makefile provides helpful commands to control the architecture deployment from your local machine. Since the state of our Terraform service project is saved in AWS S3, changes to the Terraform architecture can occur from anywhere, as long as you initialize the Terraform project with the backend so the Terraform state file is considered.
 
-When you are finished testing, it's a good idea to tear down the infrastructure. Please do so using the CircleCI workflow named "destroy or Makefile rule named "destroy".
+When you are finished testing, it's a good idea to tear down the infrastructure. Please do so using the CircleCI workflow named "destroy" or Makefile rule named "destroy".
 
 ## Conclusion
 
