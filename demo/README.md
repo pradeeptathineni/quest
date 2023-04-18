@@ -65,9 +65,7 @@ The quest service is a good representation of DevOps in action. It uses technolo
 -   When you want to deploy the architecture: Run make in the local repo copy root: `make local-deploy`
 -   When you want to destroy the architecture: Run make in the local repo copy root: `make destroy`
 
-##### The Makefile provides helpful commands to control the architecture deployment from your local machine. Since the state of our Terraform service project is saved in AWS S3, changes to the Terraform archhitecture can occur anywhere, as long as you initialize the Terraform project with the backend.
-
-##### If you delete the Terraform state bucket in AWS S3 before you wipe the Terraform service architecture, you may be in a pickle that requires you to manually delete all those AWS resources. To avoid this, follow the automated steps defined here.
+##### **_ PLEASE NOTE: If you delete the Terraform state bucket in AWS S3 before you wipe the Terraform service architecture, you may be in a pickle that requires you to manually delete all those AWS resources. To avoid this, follow the automated steps defined here. _**
 
 ## Usage
 
@@ -75,7 +73,9 @@ Once the infrastructure is deployed, you can access the weba application by navi
 
 Every time a change is pushed to the master branch, such as a commit or pull request, the CircleCI pipeline will kick off the workflow defined in the .circleci/config.yml file. Remember to update and commit the workflows as needed.
 
-When you are finished testing, it's a good idea to tear down the infrastructure. Please do so using the CircleCI workflow or Makefile rule named "destroy".
+The Makefile provides helpful commands to control the architecture deployment from your local machine. Since the state of our Terraform service project is saved in AWS S3, changes to the Terraform architecture can occur from anywhere, as long as you initialize the Terraform project with the backend so the Terraform state file is considered.
+
+When you are finished testing, it's a good idea to tear down the infrastructure. Please do so using the CircleCI workflow named "destroy or Makefile rule named "destroy".
 
 ## Conclusion
 
