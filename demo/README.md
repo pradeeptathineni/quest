@@ -4,11 +4,16 @@ The quest service is a good representation of DevOps in action. It uses technolo
 
 ## Project Prerequisites
 
--   A Github account. Visit [Github](https://github.com/signup) to sign up.
--   Git installed locally on your machine. Visit [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for instructions.
--   Git configured locally with your Github user information. Visit [Git Configuration](https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration) for instructions.
--   An AWS account. Visit [AWS Registration](https://portal.aws.amazon.com/gp/aws/developer/registration/index.html) to sign up.
--   Access to an admin AWS user with programmatic access, and its AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY. Visit [Creating Users](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html#id_users_create_console) for instructions on creating users in the AWS console, or please contact your company's AWS cloud administrator for assistance in creating this in a development or test AWS account.
+-   A Github account.
+    -   Visit [Github](https://github.com/signup) to sign up.
+-   Git installed locally on your machine.
+    -   Visit [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for instructions.
+-   Git configured locally with your Github user information.
+    -   Visit [Git Configuration](https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration) for instructions.
+-   An AWS account.
+    -   Visit [AWS Registration](https://portal.aws.amazon.com/gp/aws/developer/registration/index.html) to sign up.
+-   Access to an admin AWS user with programmatic access, and its AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+    -   Visit [Creating Users](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html#id_users_create_console) for instructions on creating users in the AWS console, or please contact your company's AWS cloud administrator for assistance in creating this in a development or test AWS account.
 
 ## Deploy Guidelines
 
