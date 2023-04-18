@@ -29,9 +29,9 @@ The quest service is a good representation of DevOps in action. It uses technolo
     - region (your preferred AWS region to deploy in)
 4. Create a [CircleCI account](https://circleci.com/), or authenticate using Github.
 5. Go to the [CircleCI application](https://app.circleci.com/dashboard).
-6. In the top left, choose the Github organization that holds this repo in CircleCI.
+6. In the top left of CircleCI, choose the Github organization that holds this repo.
 7. "Follow" this project in CircleCI, choose the master branch and default config.yml location, and go to the project.
-8. In the top right, configure project settings for this repo, and add the following environment variables with the values you choose:
+8. In the top right of CircleCI, configure project settings for this repo, and add the following environment variables with the values you choose:
     - AWS_REGION (must follow the region variable you set in \*/terraform/variables.tf)
     - AWS_ACCESS_KEY_ID (aws creds must have admin access)
     - AWS_SECRET_ACCESS_KEY (aws creds must have admin access)
