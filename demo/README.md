@@ -33,16 +33,19 @@ The quest service is a good representation of DevOps in action. It uses technolo
 
 #### CircleCI Deploy Steps
 
--   When you want to deploy:
-    1. Go back to your repo locally where you cloned it.
-    2. Commit a change where you uncomment the workflow named "deploy" in the .circleci/config.yml.
-    3. This will cause the CircleCI project project to trigger a pipeline for the destroy job.
-        - Congratulations, you just began the first CircleCI pipeline!
-        - Any subsequent changes pushed to the master branch (commits, pull requests, etc) will trigger this pipeline.
--   When you want to destroy the architecture:
-    1.  Go back to your repo locally where you cloned it.
-    2.  Commit a change where you comment the workflow named "deploy" and uncomment the workflow named "destroy" in the .circleci/config.yml.
-    3.  This will cause the CircleCI project to trigger a pipeline for the destroy job.
+When you want to deploy:
+
+1. Go back to your repo locally where you cloned it.
+2. Commit a change where you uncomment the workflow named "deploy" in the .circleci/config.yml.
+3. This will cause the CircleCI project project to trigger a pipeline for the destroy job.
+    - Congratulations, you just began the first CircleCI pipeline!
+    - Any subsequent changes pushed to the master branch (commits, pull requests, etc) will trigger this pipeline.
+
+When you want to destroy the architecture:
+
+1.  Go back to your repo locally where you cloned it.
+2.  Commit a change where you comment the workflow named "deploy" and uncomment the workflow named "destroy" in the .circleci/config.yml.
+3.  This will cause the CircleCI project to trigger a pipeline for the destroy job.
 
 ### Local Deploy (Manual)
 
@@ -62,10 +65,15 @@ The quest service is a good representation of DevOps in action. It uses technolo
 
 #### Local Deploy Steps
 
--   When you want to deploy the architecture: Run make in the local repo copy root: `make local-deploy`
--   When you want to destroy the architecture: Run make in the local repo copy root: `make destroy`
+When you want to deploy the architecture:
 
-##### **_ PLEASE NOTE: If you delete the Terraform state bucket in AWS S3 before you wipe the Terraform service architecture, you may be in a pickle that requires you to manually delete all those AWS resources. To avoid this, follow the automated steps defined here. _**
+-   Run make in the local repo copy root: `make local-deploy`
+
+When you want to destroy the architecture:
+
+-   Run make in the local repo copy root: `make destroy`
+
+##### \*\*\* PLEASE NOTE: If you delete the Terraform state bucket in AWS S3 before you wipe the Terraform service architecture, you may be in a pickle that requires you to manually delete all those AWS resources. To avoid this, follow the automated steps defined here. \*\*\*
 
 ## Usage
 
