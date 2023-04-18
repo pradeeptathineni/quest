@@ -1,6 +1,6 @@
 # Quest Service Project Documentation
 
-The quest service is a good representation of DevOps in action. It uses technologies such as Docker, Terraform, AWS, CircleCI, and Make to support AWS deployments of our Golang web application and its architecture. This architecture is necessary to loadbalance HTTP and HTTPS traffic over multiple AWS availability zones to serverless ECS containers hosting our Golang web application.
+The quest service is a good representation of DevOps in action. It uses technologies such as Docker, Terraform, AWS, CircleCI, and Make to support AWS deployments of our Node.js web application and its architecture. This architecture is necessary to loadbalance HTTP and HTTPS traffic over multiple AWS availability zones to serverless ECS containers hosting our Node.js web application.
 
 ## Project Prerequisites
 
