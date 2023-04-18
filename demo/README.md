@@ -37,7 +37,7 @@ When you want to deploy:
 
 1. Go back to your repo locally where you cloned it.
 2. Commit a change where you uncomment the workflow named "deploy" in the .circleci/config.yml.
-3. This will cause the CircleCI project project to trigger a pipeline for the destroy job.
+3. This will cause the CircleCI project project to trigger a pipeline for the deploy job.
     - Congratulations, you just began the first CircleCI pipeline!
     - Any subsequent changes pushed to the master branch (commits, pull requests, etc) will trigger this pipeline.
 
