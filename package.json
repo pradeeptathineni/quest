@@ -7,9 +7,13 @@
     "start": "node src/000.js"
   },
   "dependencies": {
-    "express": "~4.16.3"
+    "express": "~4.16.3",
+    "three": "^0.151.3"
   },
   "keywords": [],
   "author": "Rearc",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^4.2.2"
+  }
 }
