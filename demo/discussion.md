@@ -88,7 +88,7 @@ I would accomplish the below if project budget and constraints permit:
 
 10. I would AWS WAF to implement rules that can help protect our service from common web-based attacks, such as SQL injection and cross-site scripting (XSS). Similarly, I would implement a NACL on the VPC to further restrict access, for example from known attackers.
 
-11. I would use AWS Shield to protect your application from distributed denial-of-service (DDoS) attacks.
+11. I would use AWS Shield to protect the service from distributed denial-of-service (DDoS) attacks.
 
 12. I would have the ECS service bring up 4 instances, 2 per AZ, instead of just 2 total.
 
