@@ -82,23 +82,23 @@
 
 8. I would also like to use Route53 to route the loadbalancer DNS to a domain name of my own, also enabling me to host dev.domain-example.com and prod.domain-example.com spaces.
 
+9. I would enable auto-scaling for the ECS service, so that it may scale up and down automatically as needed
+
 I would accomplish the below if project budget and constraints permit:
 
-9. I would create an S3 bucket and turn on VPC flow logs for the VPC holding our service.
+10. I would create an S3 bucket and turn on VPC flow logs for the VPC holding our service.
 
-10. I would AWS WAF to implement rules that can help protect our service from common web-based attacks, such as SQL injection and cross-site scripting (XSS). Similarly, I would implement a NACL on the VPC to further restrict access, for example from known attackers.
-
-11. I would use AWS Shield to protect the service from distributed denial-of-service (DDoS) attacks.
+11. ~~I would AWS WAF to implement rules that can help protect our service from common web-based attacks, such as SQL injection and cross-site scripting (XSS). Similarly, I would implement a NACL on the VPC to further restrict access, for example from known attackers.~~
 
 12. I would have the ECS service bring up 4 instances, 2 per AZ, instead of just 2 total.
 
 13. I would enable AWS Config so I can have metrics on configuration changes to my AWS resources.
 
-14. I would enable auto-scaling for the ECS service, so that it may scale up and down automatically as needed.
+14. I would implement subnet-level encryption to encrypt data at rest within our public subnets, using tools like S3 Server-Side Encryption or AWS KMS to manage the encryption keys.
 
-15. I would implement subnet-level encryption to encrypt data at rest within our public subnets, using tools like S3 Server-Side Encryption or AWS KMS to manage the encryption keys.
+15. Consider increasing the availability and performance of the service by implementing AWS Global Accelerator on the loadbalancer.
 
-16. Consider increasing the availability and performance of the service by implementing AWS Global Accelerator on the loadbalancer.
+16. I would use AWS Shield to protect the service from distributed denial-of-service (DDoS) attacks.
 
 ## Questions I was left with
 
