@@ -128,3 +128,9 @@ I would accomplish the below if project budget and constraints permit:
 -   The lesson learned: You just have to create a bucket beforehand.
 -   I opted to just use aws cli to check if the bucket exists and if not then perform the state config terraform apply and init.
 -   The only major downside is that the bucket name is hard-coded in the .state/terraform/main.tf, .state/terraform/providers.tf, and .circleci/config.yml.
+
+### Q. What is the reason behind ACL rule 103 being the fix for the odd Golang panic issue?
+
+-   Previously when I was implementing HTTPS I came to a point where resolving the loadbalancer DNS would load the app but there would be some odd Golang panic error.
+-   This happened again when I implemented the NACL, and it wasn't until I added rule 103 that it worked again.
+-   I understand a little that these ports 1024 to 65535 are helpful for web server communication, but I would like to understand deeper.
