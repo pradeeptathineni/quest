@@ -6,6 +6,7 @@ module "network" {
   profile     = var.profile
   region      = var.region
   environment = var.environment
+  alb_arn     = module.alb.alb_arn
 }
 
 # Reference the ecr module

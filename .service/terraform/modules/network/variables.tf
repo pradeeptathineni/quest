@@ -3,3 +3,4 @@ variable "service" {}
 variable "profile" {}
 variable "region" {}
 variable "environment" {}
+variable "alb_arn" {}

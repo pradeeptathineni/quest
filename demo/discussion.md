@@ -28,7 +28,7 @@
 -   The ECS instances are placed in a private subnet with no internet gateway attached. This helps to protect the instances from unauthorized access from the internet.
 -   The application loadbalancer is used to distribute incoming traffic to the ECS instances, and it is configured to terminate SSL/TLS connections using a certificate from AWS Certificate Manager (ACM). This ensures that the traffic between the client and the load balancer is encrypted in transit.
 -   The ECS service uses AWS Fargate to run the containers in a serverless environment, which can help reduce the risk of server-level attacks.
--
+-   An AWS WAF protects the loadbalancer against any traffic that is not from the USA only. This was a design choice to limit and secure traffic in a simple yet very effective way.
 
 # Availability
 

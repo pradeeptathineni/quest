@@ -1,4 +1,9 @@
 # Output ALB ARN
+output "alb_arn" {
+  value = aws_lb.app_lb.arn
+}
+
+# Output ALB target group ARN
 output "alb_tg_arn" {
   value = aws_lb_target_group.lb_tgt_group_http.arn
 }
