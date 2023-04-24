@@ -98,6 +98,8 @@ I would accomplish the below if project budget and constraints permit:
 
 15. I would implement subnet-level encryption to encrypt data at rest within our public subnets, using tools like S3 Server-Side Encryption or AWS KMS to manage the encryption keys.
 
+16. Consider increasing the availability and performance of the service by implementing AWS Global Accelerator on the loadbalancer.
+
 ## Questions I was left with
 
 ### Q. Why do I not have to create an AWS target group for HTTPS protocol?
