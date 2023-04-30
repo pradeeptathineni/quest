@@ -82,7 +82,7 @@ When you want to destroy the architecture:
 
 ## Usage
 
-Once the infrastructure is deployed, you can access the web application by navigating to the public DNS address of the loadbalancer in your web browser. You can find the public IP address in the Terraform output or in the AWS EC2 console.
+Once the infrastructure is deployed, you can access the web application by navigating to the public DNS address of the loadbalancer in your web browser. You can find the public DNS address in the Terraform output or in the AWS EC2 console.
 
 Every time a change is pushed to the master branch, such as a commit or pull request, the CircleCI pipeline will kick off the workflow defined in the .circleci/config.yml file. Remember to update and commit the workflows as needed.
 
